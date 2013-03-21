@@ -3,7 +3,7 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([Nidos Plugins], [0.0.1])
 
 AC_LANG_C
-AC_PROC_CC
+AC_PROG_CC
 AC_EXEEXT #what is this?
 
 
@@ -21,5 +21,5 @@ CFLAGS="$CFLAGS -g -O0"
 CXXFLAGS="$CXXFLAGS -g -O0"
 fi
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile amp/Makefile])
 AC_OUTPUT

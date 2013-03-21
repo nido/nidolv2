@@ -1,15 +1,14 @@
-AC_INIT([Nidos Plugins], [0.0.1])
+AC_INIT([nido-lv2], [0.0.1])
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE([Nidos Plugins], [0.0.1])
-
+AM_INIT_AUTOMAKE([nido-lv2], [0.0.1])
 AC_CONFIG_MACRO_DIR([m4])
+
 
 AC_LANG_C
 AC_PROG_CC
 AC_PROG_LIBTOOL
-AC_EXEEXT #what is this?
 
-LT_INIT
+LT_INIT([disable-static])
 
 AC_ARG_ENABLE(maintainer-mode, [AS_HELP_STRING([--enable-maintainer-mode], [build with debugging and no optimization])],
 [
@@ -27,7 +26,7 @@ fi
 
 
 AC_ARG_WITH(lv2dir,
-[  --with-lv2dir=DIR  Use DIR as the lv2 plugin directory [[LIBDIR/lv2]]],
+[--with-lv2dir=DIR  Use DIR as the lv2 plugin directory [[LIBDIR/lv2]]],
 lv2dir="\${libdir}/$with_datarootdir",
 lv2dir='$(libdir)/lv2')
 AC_SUBST(lv2dir)

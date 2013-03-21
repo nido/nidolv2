@@ -1,24 +1,14 @@
-# LV2 Amp Example Plugin
-# Copyright 2006-2012 David Robillard <d@drobilla.net>
-# Copyright 2006-2011 Steve Harris <steve@plugin.org.uk>
-#
-# Permission to use, copy, modify, and/or distribute this software for any
-# purpose with or without fee is hereby granted, provided that the above
-# copyright notice and this permission notice appear in all copies.
-#
-# THIS SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 @prefix doap: <http://usefulinc.com/ns/doap#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix lv2: <http://lv2plug.in/ns/lv2core#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://nidomedia.com/#me>
+	a foaf:Person ;
+	foaf:name "Nido Media" ;
+	foaf:mbox <nido@foxserver.be> ;
+	rdfs:seeAlso <http://nidomedia.com/> .
 
 <http://drobilla.net/drobilla#me>
 	a foaf:Person ;
@@ -26,19 +16,11 @@
 	foaf:mbox <mailto:d@drobilla.net> ;
 	rdfs:seeAlso <http://drobilla.net/drobilla> .
 
-<http://lv2plug.in/plugins/eg-amp>
+<http://nidomedia.com/lv2/nidoamp>
 	a lv2:Plugin ,
 		lv2:AmplifierPlugin ;
-	doap:maintainer <http://drobilla.net/drobilla#me> ;
-	doap:name "Simple Amplifier" ,
-		"简单放大器"@ch ,
-		"Einfacher Verstärker"@de ,
-		"Simple Amp"@en-gb ,
-		"Amplificador Simple"@es ,
-		"Amplificateur de Base"@fr ,
-		"Amplificatore Semplice"@it ,
-		"簡単なアンプ"@jp ,
-		"Просто Усилитель"@ru ;
+	doap:maintainer <http://nidomedia.com/#me> ;
+	doap:name "Nidos test Simple Amplifier" ;
 	doap:license <http://opensource.org/licenses/isc> ;
 	lv2:optionalFeature lv2:hardRTCapable ;
 	lv2:port [

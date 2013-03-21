@@ -22,7 +22,7 @@
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#define AMP_URI "http://lv2plug.in/plugins/eg-amp"
+#define AMP_URI "http://nidomedia.com/lv2/nidoamp"
 
 typedef enum {
 	AMP_GAIN   = 0,

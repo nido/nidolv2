@@ -76,14 +76,17 @@ activate(LV2_Handle instance)
 
 static void
 run(LV2_Handle instance, uint32_t n_samples)
-{
+{ 
 	Amp* amp = (Amp*)instance;
 
 	const float        gain   = *(amp->gain);
 	const float* const input  = amp->input;
 	float* const       output = amp->output;
 
-	const float coef = DB_CO(gain);
+	float coef = DB_CO(gain);
+	if (n_samples != 512) {
+		coef = 0;
+	}
 	uint32_t pos;
 	for (pos = 0; pos < n_samples; pos++) {
 		output[pos] = input[pos] * coef;

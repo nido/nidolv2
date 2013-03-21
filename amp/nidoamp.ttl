@@ -3,6 +3,7 @@
 @prefix lv2: <http://lv2plug.in/ns/lv2core#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix bufsz: <http://lv2plug.in/ns/ext/buf-size/> .
 
 <http://nidomedia.com/#me>
 	a foaf:Person ;
@@ -22,7 +23,9 @@
 	doap:maintainer <http://nidomedia.com/#me> ;
 	doap:name "Nidos test Simple Amplifier" ;
 	doap:license <http://opensource.org/licenses/isc> ;
-	lv2:optionalFeature lv2:hardRTCapable ;
+	lv2:requiredFeature bufsz:fixedBlockLength ;
+	bufsz:minBlockLength 512 ;
+	bufsz:maxBlockLength 512 ;
 	lv2:port [
 		a lv2:InputPort ,
 			lv2:ControlPort ;

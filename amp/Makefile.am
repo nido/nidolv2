@@ -1,11 +1,14 @@
-lv2_LTLIBRARIES = nidoamp.la
+SUFFIXES: .ttl .ttlin
+
+nidoamp_LTLIBRARIES = nidoamp.la
+nidoamp_DATA = nidoamp.ttl manifest.ttl
 
 nidoamp_la_SOURCES = nidoamp.c
-nidoamp_la_LDFLAGS = -module -lm
-lv2_EXTRAS = nidoamp.ttl manifest.ttl
+nidoamp_la_LDFLAGS = -module -lm -avoid-version -shared
 
-datarootdir = @datarootdir@
-lv2dir = @lv2dir@/nidoamp.lv2
+nidoampdir = @lv2dir@/nidoamp.lv2
 
-%.ttl: %.ttl.in
-	cat $< | sed s/@LIB_EXT@/.so/g > $@
+.ttlin.ttl:
+	cat $< | sed s/@LIB_EXT@/@SHREXT@/g > $@
+
+CLEANFILES=manifest.ttl

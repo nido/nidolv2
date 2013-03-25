@@ -18,51 +18,40 @@
 	rdfs:seeAlso <http://drobilla.net/drobilla> .
 
 <http://nidomedia.com/lv2/nidoamp>
-	a lv2:Plugin ,
-		lv2:AmplifierPlugin ;
+	a lv2:Plugin , lv2:SpectralPlugin ;
 	doap:maintainer <http://nidomedia.com/#me> ;
-	doap:name "Nidos test Simple Amplifier" ;
+	doap:name "Nido Spectral Filter" ;
 	doap:license <http://opensource.org/licenses/isc> ;
 	lv2:requiredFeature bufsz:fixedBlockLength ;
 	bufsz:minBlockLength 512 ;
 	bufsz:maxBlockLength 512 ;
 	lv2:port [
-		a lv2:InputPort ,
-			lv2:ControlPort ;
+		a lv2:InputPort, lv2:ControlPort ;
 		lv2:index 0 ;
 		lv2:symbol "gain" ;
-		lv2:name "Gain" ,
-			"收益"@ch ,
-			"Gewinn"@de ,
-			"Gain"@en-gb ,
-			"Aumento"@es ,
-			"Gain"@fr ,
-			"Guadagno"@it ,
-			"利益"@jp ,
-			"Увеличение"@ru ;
-		lv2:default 0.0 ;
+		lv2:name "Gain";
+		lv2:default 5.0 ;
 		lv2:minimum -90.0 ;
 		lv2:maximum 24.0 ;
 		lv2:scalePoint [
 			rdfs:label "+5" ;
 			rdf:value 5.0
-		] ,	[
+		], [
 			rdfs:label "0" ;
 			rdf:value 0.0
-		] ,	[
+		], [
 			rdfs:label "-5" ;
 			rdf:value -5.0
-		] ,	[
+		], [
 			rdfs:label "-10" ;
 			rdf:value -10.0
 		]
-	] ,	[
-		a lv2:AudioPort ,
-			lv2:InputPort ;
+	], [
+	a lv2:AudioPort, lv2:InputPort ;
 		lv2:index 1 ;
 		lv2:symbol "in" ;
 		lv2:name "In"
-	] ,	[
+	], [
 		a lv2:AudioPort ,
 			lv2:OutputPort ;
 		lv2:index 2 ;

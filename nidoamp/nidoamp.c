@@ -20,7 +20,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+//#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include <lv2.h>
 
 #define AMP_URI "http://nidomedia.com/lv2/nidoamp"
 

@@ -35,5 +35,5 @@ AC_SUBST(lv2dir)
 
 SHREXT=`libtool --config | grep shrext | grep -Go '\.[^"]*'`
 AC_SUBST(SHREXT)
-AC_CONFIG_FILES([Makefile amp/Makefile])
+AC_CONFIG_FILES([Makefile nidoamp/Makefile])
 AC_OUTPUT

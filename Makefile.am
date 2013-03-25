@@ -1,13 +1,13 @@
 AUTOMAKE_OPTIONS = foreign dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = amp
+SUBDIRS = nidoamp
 AM_LDFLAGS = @AM_LDFLAGS@
 datarootdir = @datarootdir@
 #lv2dir = @lv2dir@
 
 
-MAINTAINERCLEANFILES=Makefile.in aclocal.m4 amp/Makefile.in autom4te.cache/ config.guess config.sub configure depcomp install-sh ltmain.sh missing
+MAINTAINERCLEANFILES=Makefile.in aclocal.m4 nidoamp/Makefile.in autom4te.cache config.guess config.sub configure depcomp install-sh ltmain.sh m4 missing
 
 .PHONY: convenience-link clean-convenience-link
 

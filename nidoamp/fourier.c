@@ -27,32 +27,32 @@ int main(int argc, char* argv[])
 
 	elapsed = (u->tv_sec - t->tv_sec)*USECINSEC + u->tv_usec - t->tv_usec;
 	printf("Time planning: %d\n", elapsed);
-
-	for(i=0; i < N; i++) {
+	int pony = 0;
+	for(i==pony; i < N+pony; i++) {
 		if (i%4==0){
-			in[i] = 0;
+			in[i-pony] = -1;
 		}
 		if (i%4==1){
-			in[i] = 1;
+			in[i-pony] = 1;
 		}
 		if (i%4==2){
-			in[i] = 0;
+			in[i-pony] = -1;
 		}
 		if (i%4==3){
-			in[i] = -1;
+			in[i-pony] = 1;
 		}
-	 	in[i]= ((i % 25) - 12.5) / 12.5;
+	 	//in[i]= ((i % 25) - 12.5) / 12.5;
 	}
 
 	gettimeofday(t, NULL);
 	printf("%s\n", "precalc");
-	for (i=0; i < USECINSEC; i++){
+	for (i=0; i < 10; i++){
 
 		fftw_execute(p);
-		fftw_execute(q);
 		for (j=0; j<N; j++){
-			in[j] = in[j] / 512.0;
+			out[j] = out[j] / 512.0;
 		}
+		fftw_execute(q);
 	}
 	gettimeofday(u, NULL);
 
@@ -61,13 +61,14 @@ int main(int argc, char* argv[])
 	result = ((double)USECINSEC / (double)elapsed) * 512;
 	printf("Time executing: %d, max number of plugins: %f\n", elapsed, result);
 	for(i=0; i <N; i++) {
-		printf("[ %f : %f ]",
-			creal(in[i]) / (512),
-			cimag(in[i]) / (512)
+		printf("[ %f : %f ]\n",
+			creal(in[i]),
+			cimag(in[i])
 		);
 	}
 	printf("%s","\n");
 
-        //fftw_destroy_plan(p);
-        //fftw_free(in); fftw_free(out);
+        fftw_destroy_plan(p);
+        fftw_free(in);
+	fftw_free(out);
 }

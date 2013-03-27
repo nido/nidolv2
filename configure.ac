@@ -8,6 +8,9 @@ AC_LANG_C
 AC_PROG_CC
 AC_PROG_LIBTOOL
 
+ACLOCAL_AMFLAGS = -I m4
+
+
 AC_ENABLE_SHARED
 LT_INIT([disable-static])
 AC_PROG_LN_S
@@ -33,7 +36,7 @@ lv2dir="\${libdir}/$with_datarootdir",
 lv2dir='$(libdir)/lv2')
 AC_SUBST(lv2dir)
 
-SHREXT=`libtool --config | grep shrext | grep -Go '\.[^"]*'`
-AC_SUBST(SHREXT)
-AC_CONFIG_FILES([Makefile nidoamp/Makefile])
+#SHREXT=`libtool --config | grep shrext | grep -Go '\.[^"]*'`
+AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]*'`])
+AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl])
 AC_OUTPUT

@@ -5,5 +5,5 @@
 
 <http://nidomedia.com/lv2/nidoamp>
 	a lv2:Plugin ;
-	lv2:binary <nidoamp@LIB_EXT@>  ;
+	lv2:binary <nidoamp@SHREXT@>  ;
 	rdfs:seeAlso <nidoamp.ttl> .

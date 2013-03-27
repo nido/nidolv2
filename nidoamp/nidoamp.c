@@ -20,10 +20,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+//#include <complex.h>
+#include <fftw3.h>
+
 //#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include <lv2.h>
 
 #define AMP_URI "http://nidomedia.com/lv2/nidoamp"
+
+#define FOURIER_SIZE 8000
+#define BUFFER_SIZE (FOURIER_SIZE * 2)
+
 
 typedef enum {
 	AMP_GAIN   = 0,
@@ -35,15 +42,23 @@ typedef struct {
 	float* gain;
 	float* input;
 	float* output;
+	fftw_complex* complex_buffer;
+	double* real_buffer;
+	float* buffer;
+	int buffer_index;
+	fftw_plan forward;
+	fftw_plan backward;
 } Amp;
 
-static LV2_Handle
+LV2_Handle
 instantiate(const LV2_Descriptor*     descriptor,
             double                    rate,
             const char*               bundle_path,
             const LV2_Feature* const* features)
 {
+
 	Amp* amp = (Amp*)malloc(sizeof(Amp));
+	
 
 	return (LV2_Handle)amp;
 }
@@ -68,30 +83,77 @@ connect_port(LV2_Handle instance,
 	}
 }
 
-static void
+void
 activate(LV2_Handle instance)
 {
+	Amp* amp = (Amp*)instance;
+	amp->gain = malloc(sizeof(float));
+	amp->complex_buffer = malloc(sizeof(fftw_complex) * (FOURIER_SIZE/2+1));
+	amp->real_buffer = malloc(sizeof(double) * (FOURIER_SIZE));
+	amp->buffer = malloc(sizeof(float) * BUFFER_SIZE);
+	amp->buffer_index = 0;
+	amp->forward = fftw_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer, amp->complex_buffer, FFTW_ESTIMATE);
+	amp->backward =  fftw_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer, amp->real_buffer, FFTW_ESTIMATE);
 }
 
-#define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
+static void fftprocess(Amp* amp, float* buffer)
+{
+	int iterator;
+	double* real_buffer = amp->real_buffer;
+	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
+		real_buffer[iterator] = buffer[iterator];
+	}
+	fftw_execute(amp->forward);
+	fftw_execute(amp->backward);
+	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
+		buffer[iterator] = (float)(real_buffer[iterator] / FOURIER_SIZE);
+	}
+}
 
-static void
+void
 run(LV2_Handle instance, uint32_t n_samples)
 { 
 	Amp* amp = (Amp*)instance;
-
-	const float        gain   = *(amp->gain);
 	const float* const input  = amp->input;
 	float* const       output = amp->output;
+	float*      buffer = amp->buffer;
+	uint32_t readindex = 0;
+	uint32_t readcount;
 
-	float coef = DB_CO(gain);
-	if (n_samples != 512) {
-		coef = 0;
-	}
-	uint32_t pos;
-	for (pos = 0; pos < n_samples; pos++) {
-		output[pos] = input[pos] * coef;
-	}
+	//printf("%i\n", n_samples);
+	//printf("%s\n", "start");
+
+	do {
+		uint32_t iterator;
+		uint32_t bufferlength = (uint32_t)(BUFFER_SIZE - amp->buffer_index);
+		//printf("%s\n", "read input");
+		readcount = n_samples;
+		if (readcount > bufferlength) {
+			readcount = bufferlength;
+		}
+		//printf("%s\n", "actually read");
+		for(iterator=0; iterator < readcount; iterator++){
+			//printf("%i, %i\n", amp->buffer_index + iterator, iterator);
+			buffer[amp->buffer_index + iterator] = input[iterator];
+		}
+		if ((amp->buffer_index % FOURIER_SIZE) + readcount >= FOURIER_SIZE){
+			//printf("%s\n", "process data 1");
+			// first half of the buffer
+			fftprocess(amp, amp->buffer);
+		}
+		if (amp->buffer_index + readcount == BUFFER_SIZE){
+			// second half of the buffer
+			// warning: pointer aritmatic
+			//printf("%s\n", "process data 2");
+			fftprocess(amp, amp->buffer + FOURIER_SIZE);
+		}
+		//printf("%s\n", "write output");
+		for(iterator=0; iterator < readcount; iterator++){
+			output[iterator] = buffer[((amp->buffer_index + FOURIER_SIZE) % BUFFER_SIZE)];
+		}
+		readindex += readcount;
+		amp->buffer_index = (amp->buffer_index + readcount) % BUFFER_SIZE;
+	} while(readindex < n_samples);
 }
 
 static void

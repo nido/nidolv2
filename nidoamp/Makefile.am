@@ -9,6 +9,6 @@ nidoamp_la_LDFLAGS = -module -lm -avoid-version -shared
 nidoampdir = @lv2dir@/nidoamp.lv2
 
 .ttlin.ttl:
-	cat $< | sed s/@LIB_EXT@/@SHREXT@/g > $@
+	cat $< | sed s/@LIB_EXT@/.so/g > $@
 
 CLEANFILES=manifest.ttl

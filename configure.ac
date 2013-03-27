@@ -8,6 +8,10 @@ AC_LANG_C
 AC_PROG_CC
 AC_PROG_LIBTOOL
 
+AC_TYPE_UINT32_T
+
+AC_CHECK_LIB([fftw3], [fftw_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 required])],[]) 
+
 AC_ENABLE_SHARED
 LT_INIT([disable-static])
 AC_PROG_LN_S
@@ -33,7 +37,8 @@ lv2dir="\${libdir}/$with_datarootdir",
 lv2dir='$(libdir)/lv2')
 AC_SUBST(lv2dir)
 
-SHREXT=`libtool --config | grep shrext | grep -Go '\.[^"]*'`
-AC_SUBST(SHREXT)
+#SiHREXT=`libtool --config | grep shrext | grep -Go '\.[^"]*'`
+AC_DEFINE([SHREXT], [`libtool --config | grep shrext | grep -Go '\.[^"]*'`])
+#AC_SUBST([SHREXT], [`libtool --config | grep shrext | grep -Go '\.[^"]*'`])
 AC_CONFIG_FILES([Makefile nidoamp/Makefile])
 AC_OUTPUT

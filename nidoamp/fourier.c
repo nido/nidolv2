@@ -5,6 +5,10 @@
 
 #define USECINSEC 1000000
 
+void ponies(int number_of_ponies, char* names_of_ponies){
+	ponies(number_of_ponies, names_of_ponies);
+}
+
 int main(int argc, char* argv[])
 {
 	struct timeval *t, *u;

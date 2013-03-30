@@ -11,7 +11,6 @@ AC_PROG_LIBTOOL
 AC_TYPE_UINT32_T
 
 AC_CHECK_LIB([fftw3], [fftw_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 required])],[]) 
-ACLOCAL_AMFLAGS = -I m4
 
 
 AC_ENABLE_SHARED
@@ -32,6 +31,16 @@ CFLAGS="$CFLAGS -g -O0"
 CXXFLAGS="$CXXFLAGS -g -O0"
 fi
 
+AC_ARG_WITH(fouriersize,
+[--with-fouriersize=SIZE  Use SIZE as the size of the fourier transform (default=512)],
+[],
+[with_fouriersize=512])
+
+AC_DEFINE_UNQUOTED(FOURIER_SIZE, $with_fouriersize)
+AC_SUBST(FOURIER_SIZE, $with_fouriersize)
+
+AC_DEFINE_UNQUOTED(COMPLEX_SIZE, $((512 / 2 + 1 )))
+AC_SUBST(COMPLEX_SIZE, $((512 / 2 + 1 )))
 
 AC_ARG_WITH(lv2dir,
 [--with-lv2dir=DIR  Use DIR as the lv2 plugin directory [[LIBDIR/lv2]]],
@@ -40,5 +49,6 @@ lv2dir='$(libdir)/lv2')
 AC_SUBST(lv2dir)
 
 AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]*'`])
-AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl])
+
+AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl])
 AC_OUTPUT

@@ -28,7 +28,7 @@
 
 #define AMP_URI "http://nidomedia.com/lv2/nidoamp"
 
-#define FOURIER_SIZE 8000
+#define FOURIER_SIZE 512
 #define BUFFER_SIZE (FOURIER_SIZE * 2)
 
 
@@ -100,6 +100,7 @@ static void fftprocess(Amp* amp, float* buffer)
 	int iterator;
 	double* real_buffer = amp->real_buffer;
 
+	static float ponies = -1.0;
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		real_buffer[iterator] = buffer[iterator];
 	}
@@ -122,15 +123,18 @@ run(LV2_Handle instance, uint32_t n_samples)
 
 	do {
 		uint32_t iterator;
-		uint32_t bufferlength = (uint32_t)(BUFFER_SIZE - amp->buffer_index);
+		uint32_t bufferlength = (uint32_t)(FOURIER_SIZE - (amp->buffer_index % FOURIER_SIZE));
 		readcount = n_samples;
-		if (readcount > bufferlength) {
+		if (amp->buffer_index + readcount > bufferlength) {
 			readcount = bufferlength;
 		}
+
 		for(iterator=0; iterator < readcount; iterator++){
 			buffer[amp->buffer_index + iterator] = input[iterator];
 		}
-		if ((amp->buffer_index % FOURIER_SIZE) + readcount >= FOURIER_SIZE){
+		if ((amp->buffer_index < FOURIER_SIZE)
+		&&  (amp->buffer_index + readcount >= FOURIER_SIZE)
+		){
 			// first half of the buffer
 			fftprocess(amp, amp->buffer);
 		}
@@ -140,7 +144,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 			fftprocess(amp, amp->buffer + FOURIER_SIZE);
 		}
 		for(iterator=0; iterator < readcount; iterator++){
-			output[iterator] = buffer[((amp->buffer_index + FOURIER_SIZE) % BUFFER_SIZE)];
+			output[iterator] = buffer[((amp->buffer_index + iterator + FOURIER_SIZE) % BUFFER_SIZE)];
 		}
 		readindex += readcount;
 		amp->buffer_index = (amp->buffer_index + readcount) % BUFFER_SIZE;

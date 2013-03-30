@@ -56,7 +56,6 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               bundle_path,
             const LV2_Feature* const* features)
 {
-
 	Amp* amp = (Amp*)malloc(sizeof(Amp));
 	
 
@@ -100,6 +99,7 @@ static void fftprocess(Amp* amp, float* buffer)
 {
 	int iterator;
 	double* real_buffer = amp->real_buffer;
+
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		real_buffer[iterator] = buffer[iterator];
 	}
@@ -120,34 +120,25 @@ run(LV2_Handle instance, uint32_t n_samples)
 	uint32_t readindex = 0;
 	uint32_t readcount;
 
-	//printf("%i\n", n_samples);
-	//printf("%s\n", "start");
-
 	do {
 		uint32_t iterator;
 		uint32_t bufferlength = (uint32_t)(BUFFER_SIZE - amp->buffer_index);
-		//printf("%s\n", "read input");
 		readcount = n_samples;
 		if (readcount > bufferlength) {
 			readcount = bufferlength;
 		}
-		//printf("%s\n", "actually read");
 		for(iterator=0; iterator < readcount; iterator++){
-			//printf("%i, %i\n", amp->buffer_index + iterator, iterator);
 			buffer[amp->buffer_index + iterator] = input[iterator];
 		}
 		if ((amp->buffer_index % FOURIER_SIZE) + readcount >= FOURIER_SIZE){
-			//printf("%s\n", "process data 1");
 			// first half of the buffer
 			fftprocess(amp, amp->buffer);
 		}
 		if (amp->buffer_index + readcount == BUFFER_SIZE){
 			// second half of the buffer
 			// warning: pointer aritmatic
-			//printf("%s\n", "process data 2");
 			fftprocess(amp, amp->buffer + FOURIER_SIZE);
 		}
-		//printf("%s\n", "write output");
 		for(iterator=0; iterator < readcount; iterator++){
 			output[iterator] = buffer[((amp->buffer_index + FOURIER_SIZE) % BUFFER_SIZE)];
 		}

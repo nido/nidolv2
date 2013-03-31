@@ -28,7 +28,10 @@
 
 #define AMP_URI "http://nidomedia.com/lv2/nidoamp"
 
+#ifndef FOURIER_SIZE
 #define FOURIER_SIZE 512
+#endif
+
 #define BUFFER_SIZE (FOURIER_SIZE * 2)
 
 

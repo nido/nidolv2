@@ -32,8 +32,13 @@
 #define FOURIER_SIZE 512
 #endif
 
-#define BUFFER_SIZE (FOURIER_SIZE * 2)
+#ifndef COMPLEX_SIZE
 #define COMPLEX_SIZE (FOURIER_SIZE / 2 + 1)
+#endif
+
+
+
+#define BUFFER_SIZE (FOURIER_SIZE * 2)
 
 
 typedef enum {

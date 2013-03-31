@@ -26,10 +26,10 @@ maintainer_mode=no
 ]
 )
 
-if test "$maintainer_mode" = "yes"; then
-CFLAGS="$CFLAGS -g -O0 -Wall -Werror"
-CXXFLAGS="$CXXFLAGS -g -O0 -Wall -Werror"
-fi
+#if test "$maintainer_mode" = "yes"; then
+CFLAGS="$CFLAGS -g -O0 -Wall"
+CXXFLAGS="$CXXFLAGS -g -O0 -Wall"
+#fi
 
 AC_ARG_WITH(fouriersize,
 [--with-fouriersize=SIZE  Use SIZE as the size of the fourier transform (default=512)],

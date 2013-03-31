@@ -28,8 +28,8 @@ maintainer_mode=no
 )
 
 if test "$maintainer_mode" = "yes"; then
-CFLAGS="$CFLAGS -g -O0"
-CXXFLAGS="$CXXFLAGS -g -O0"
+CFLAGS="$CFLAGS -g -O0 -Wall -Werror"
+CXXFLAGS="$CXXFLAGS -g -O0 -Wall -Werror"
 fi
 
 

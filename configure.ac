@@ -39,8 +39,8 @@ AC_ARG_WITH(fouriersize,
 AC_DEFINE_UNQUOTED(FOURIER_SIZE, $with_fouriersize)
 AC_SUBST(FOURIER_SIZE, $with_fouriersize)
 
-AC_DEFINE_UNQUOTED(COMPLEX_SIZE, $((512 / 2 + 1 )))
-AC_SUBST(COMPLEX_SIZE, $((512 / 2 + 1 )))
+AC_DEFINE_UNQUOTED(COMPLEX_SIZE, $(($with_fouriersize / 2 + 1 )))
+AC_SUBST(COMPLEX_SIZE, $(($with_fouriersize / 2 + 1 )))
 
 AC_ARG_WITH(lv2dir,
 [--with-lv2dir=DIR  Use DIR as the lv2 plugin directory [[LIBDIR/lv2]]],

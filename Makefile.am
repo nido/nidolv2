@@ -4,6 +4,8 @@ MAINTAINERCLEANFILES=Makefile.in aclocal.m4 nidoamp/Makefile.in config.guess con
 maintainer-clean-local:
 	rm -rf m4
 
+bin_SCRIPTS = lv2wisdom.sh
+
 ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = nidoamp
 AM_LDFLAGS = @AM_LDFLAGS@

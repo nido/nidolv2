@@ -44,7 +44,9 @@ AC_SUBST(COMPLEX_SIZE, $((512 / 2 + 1 )))
 
 AC_ARG_WITH(lv2dir,
 [--with-lv2dir=DIR  Use DIR as the lv2 plugin directory [[LIBDIR/lv2]]],
-lv2dir="\${libdir}/$with_datarootdir",
+lv2dir=$with_lv2dir
+# alter libdir so libtool gets the right path in the .la file
+libdir=$with_lv2dir,
 lv2dir='$(libdir)/lv2')
 AC_SUBST(lv2dir)
 

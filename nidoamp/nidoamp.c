@@ -118,6 +118,44 @@ static void fftprocess(Amp * amp, float *buffer)
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		buffer[iterator] = (float)(real_buffer[iterator] / FOURIER_SIZE);
 	}
+}
+
+void
+run(LV2_Handle instance, uint32_t n_samples)
+{
+        Amp* amp = (Amp*)instance;
+        const float* const input  = amp->input;
+        float* const       output = amp->output;
+        float*      buffer = amp->buffer;
+        uint32_t readindex = 0;
+        uint32_t readcount;
+
+        do {
+                uint32_t iterator;
+                uint32_t bufferlength = (uint32_t)(FOURIER_SIZE - (amp->buffer_index % FOURIER_SIZE));
+                readcount = n_samples;
+                if (amp->buffer_index + readcount > bufferlength) {
+                        readcount = bufferlength;
+                }
+
+                for(iterator=0; iterator < readcount; iterator++){
+                        buffer[amp->buffer_index + iterator] = input[iterator];
+                }
+                if ((amp->buffer_index < FOURIER_SIZE)
+                &&  (amp->buffer_index + readcount >= FOURIER_SIZE)
+                ){
+                        // first half of the buffer
+                        fftprocess(amp, amp->buffer);
+                }
+                if (amp->buffer_index + readcount == BUFFER_SIZE){
+                        // second half of the buffer
+                        // warning: pointer aritmatic
+                        fftprocess(amp, amp->buffer + FOURIER_SIZE);
+                }
+                for(iterator=0; iterator < readcount; iterator++){
+                        output[iterator] = buffer[((amp->buffer_index + iterator + FOURIER_SIZE) % BUFFER_SIZE)];
+                }
+
 	readindex += readcount;
 	amp->buffer_index = (amp->buffer_index + readcount) % BUFFER_SIZE;
     } while (readindex < n_samples);

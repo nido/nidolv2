@@ -66,7 +66,7 @@ instantiate(const LV2_Descriptor * descriptor,
 	amp->forward = fftw_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer, amp->complex_buffer, FFTW_ESTIMATE);
 	amp->backward =  fftw_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer, amp->real_buffer, FFTW_ESTIMATE);
 	// making this zero (float zero's are zero too)
-	amp->real_buffer = memset(amp->real_buffer, 0, sizeof(double) * FOURIER_SIZE);
+	amp->outbuffer = memset(amp->real_buffer, 0, sizeof(float) * FOURIER_SIZE);
 
     return (LV2_Handle) amp;
 }
@@ -99,20 +99,43 @@ static void fftprocess(Amp * amp)
 	double* real_buffer = amp->real_buffer;
 	fftw_complex* complex_buffer = amp->complex_buffer;
 	int hipass = (int) *(amp->hipass);
+	double start;
+	double stop;
+	double slope;
+	double centre;
 
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		real_buffer[iterator] = amp->inbuffer[iterator];
 	}
+
+	start = amp->real_buffer[0];
+	stop = amp->real_buffer[FOURIER_SIZE - 1];
+
 	fftw_execute(amp->forward);
+
 	for (iterator = 0; iterator < COMPLEX_SIZE; iterator++){
 		if (iterator < hipass) {
 			complex_buffer[iterator] *= 0.0;
 		}
 	}
+
 	fftw_execute(amp->backward);
+
+
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
-		amp->outbuffer[iterator] = (float)(real_buffer[iterator] / FOURIER_SIZE);
+		amp->outbuffer[iterator] = (float)((real_buffer[iterator]) / FOURIER_SIZE);
 	}
+	// naive smoothing
+	start -= amp->real_buffer[0]/FOURIER_SIZE;
+	stop -= amp->real_buffer[FOURIER_SIZE - 1]/FOURIER_SIZE;
+	slope = (stop - start) / 2;
+	centre = start - slope;
+	
+	printf("%f, %f, %f, %f\n", start, stop, centre, slope);
+
+//	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
+//		amp->outbuffer[iterator] += centre + slope * cosf(iterator * (M_PI / 2) / FOURIER_SIZE);
+//	}
 }
 
 void
@@ -123,7 +146,7 @@ run(LV2_Handle instance, uint32_t n_samples)
         float* const       output = amp->output;
         float*      inbuffer = amp->inbuffer;
         float*      outbuffer = amp->outbuffer;
-        uint32_t readindex = 0;
+        uint32_t io_index = 0;
         uint32_t readcount;
 
         do {
@@ -135,16 +158,16 @@ run(LV2_Handle instance, uint32_t n_samples)
                 }
 
                 for(iterator=0; iterator < readcount; iterator++){
-                        inbuffer[amp->buffer_index + iterator] = input[readindex + iterator];
-			output[readindex + iterator] = outbuffer[amp->buffer_index + iterator];
+                        inbuffer[amp->buffer_index + iterator] = input[io_index + iterator];
+			output[io_index + iterator] = outbuffer[amp->buffer_index + iterator];
                 }
 
                 if (amp->buffer_index + readcount == FOURIER_SIZE){
                         fftprocess(amp);
                 }
-	readindex += readcount;
+	io_index += readcount;
 	amp->buffer_index = (amp->buffer_index + readcount) % FOURIER_SIZE;
-    } while (readindex < n_samples);
+    } while (io_index < n_samples);
 }
 
 static void deactivate(LV2_Handle instance)

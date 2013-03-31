@@ -1,7 +1,7 @@
 AC_INIT([nido-lv2], [0.0.1])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([gnu dist-bzip2 dist-zip])
-AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIR([.])
 
 
 AC_LANG_C

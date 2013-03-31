@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#include <complex.h>
+#include <complex.h>
 #include <fftw3.h>
 
 //#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
@@ -30,16 +30,17 @@
 
 #define FOURIER_SIZE 512
 #define BUFFER_SIZE (FOURIER_SIZE * 2)
+#define COMPLEX_SIZE (FOURIER_SIZE / 2 + 1)
 
 
 typedef enum {
-	AMP_GAIN   = 0,
+	AMP_HIPASS   = 0,
 	AMP_INPUT  = 1,
 	AMP_OUTPUT = 2
 } PortIndex;
 
 typedef struct {
-	float* gain;
+	float* hipass;
 	float* input;
 	float* output;
 	fftw_complex* complex_buffer;
@@ -56,8 +57,14 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               bundle_path,
             const LV2_Feature* const* features)
 {
-	Amp* amp = (Amp*)malloc(sizeof(Amp));
-	
+	Amp* amp = malloc(sizeof(Amp));
+	amp->complex_buffer = fftw_malloc(sizeof(fftw_complex) * COMPLEX_SIZE);
+	amp->real_buffer = fftw_malloc(sizeof(double) * (FOURIER_SIZE));
+	// todo: malloc when latency is implemented.
+	amp->buffer = calloc(sizeof(float), BUFFER_SIZE);
+	amp->buffer_index = 0;
+	amp->forward = fftw_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer, amp->complex_buffer, FFTW_ESTIMATE);
+	amp->backward =  fftw_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer, amp->real_buffer, FFTW_ESTIMATE);
 
 	return (LV2_Handle)amp;
 }
@@ -70,8 +77,8 @@ connect_port(LV2_Handle instance,
 	Amp* amp = (Amp*)instance;
 
 	switch ((PortIndex)port) {
-	case AMP_GAIN:
-		amp->gain = (float*)data;
+	case AMP_HIPASS:
+		amp->hipass = (float*)data;
 		break;
 	case AMP_INPUT:
 		amp->input = (float*)data;
@@ -86,25 +93,24 @@ void
 activate(LV2_Handle instance)
 {
 	Amp* amp = (Amp*)instance;
-	amp->gain = malloc(sizeof(float));
-	amp->complex_buffer = malloc(sizeof(fftw_complex) * (FOURIER_SIZE/2+1));
-	amp->real_buffer = malloc(sizeof(double) * (FOURIER_SIZE));
-	amp->buffer = malloc(sizeof(float) * BUFFER_SIZE);
-	amp->buffer_index = 0;
-	amp->forward = fftw_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer, amp->complex_buffer, FFTW_ESTIMATE);
-	amp->backward =  fftw_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer, amp->real_buffer, FFTW_ESTIMATE);
 }
 
 static void fftprocess(Amp* amp, float* buffer)
 {
 	int iterator;
 	double* real_buffer = amp->real_buffer;
+	fftw_complex* complex_buffer = amp->complex_buffer;
+	int hipass = (int) *(amp->hipass);
 
-	static float ponies = -1.0;
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		real_buffer[iterator] = buffer[iterator];
 	}
 	fftw_execute(amp->forward);
+	for (iterator = 0; iterator < COMPLEX_SIZE; iterator++){
+		if (COMPLEX_SIZE - iterator > hipass) {
+			complex_buffer[iterator] = 0.0 * I;
+		}
+	}
 	fftw_execute(amp->backward);
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		buffer[iterator] = (float)(real_buffer[iterator] / FOURIER_SIZE);

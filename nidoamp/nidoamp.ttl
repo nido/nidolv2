@@ -4,6 +4,8 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix bufsz: <http://lv2plug.in/ns/ext/buf-size/> .
+@prefix ll: <http://ll-plugins.nongnu.org/lv2/namespace#>.
+
 
 <http://nidomedia.com/#me>
 	a foaf:Person ;
@@ -18,7 +20,7 @@
 	rdfs:seeAlso <http://drobilla.net/drobilla> .
 
 <http://nidomedia.com/lv2/nidoamp>
-	a lv2:Plugin , lv2:SpectralPlugin ;
+	a lv2:Plugin, lv2:SpectralPlugin ;
 	doap:maintainer <http://nidomedia.com/#me> ;
 	doap:name "Nido Spectral Filter" ;
 	doap:license <http://opensource.org/licenses/isc> ;
@@ -28,24 +30,11 @@
 	lv2:port [
 		a lv2:InputPort, lv2:ControlPort ;
 		lv2:index 0 ;
-		lv2:symbol "gain" ;
-		lv2:name "Gain";
-		lv2:default 5.0 ;
-		lv2:minimum -90.0 ;
-		lv2:maximum 24.0 ;
-		lv2:scalePoint [
-			rdfs:label "+5" ;
-			rdf:value 5.0
-		], [
-			rdfs:label "0" ;
-			rdf:value 0.0
-		], [
-			rdfs:label "-5" ;
-			rdf:value -5.0
-		], [
-			rdfs:label "-10" ;
-			rdf:value -10.0
-		]
+		lv2:symbol "hipass" ;
+		lv2:name "High Pass";
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 260.0 ;
 	], [
 	a lv2:AudioPort, lv2:InputPort ;
 		lv2:index 1 ;

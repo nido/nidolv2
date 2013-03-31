@@ -28,7 +28,10 @@
 
 #define AMP_URI "http://nidomedia.com/lv2/nidoamp"
 
+#ifndef FOURIER_SIZE
 #define FOURIER_SIZE 512
+#endif
+
 #define BUFFER_SIZE (FOURIER_SIZE * 2)
 #define COMPLEX_SIZE (FOURIER_SIZE / 2 + 1)
 
@@ -52,10 +55,9 @@ typedef struct {
 } Amp;
 
 LV2_Handle
-instantiate(const LV2_Descriptor*     descriptor,
-            double                    rate,
-            const char*               bundle_path,
-            const LV2_Feature* const* features)
+instantiate(const LV2_Descriptor * descriptor,
+	    double rate,
+	    const char *bundle_path, const LV2_Feature * const *features)
 {
 	Amp* amp = malloc(sizeof(Amp));
 	amp->complex_buffer = fftw_malloc(sizeof(fftw_complex) * COMPLEX_SIZE);
@@ -66,13 +68,10 @@ instantiate(const LV2_Descriptor*     descriptor,
 	amp->forward = fftw_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer, amp->complex_buffer, FFTW_ESTIMATE);
 	amp->backward =  fftw_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer, amp->real_buffer, FFTW_ESTIMATE);
 
-	return (LV2_Handle)amp;
+    return (LV2_Handle) amp;
 }
 
-static void
-connect_port(LV2_Handle instance,
-             uint32_t   port,
-             void*      data)
+static void connect_port(LV2_Handle instance, uint32_t port, void *data)
 {
 	Amp* amp = (Amp*)instance;
 
@@ -89,13 +88,12 @@ connect_port(LV2_Handle instance,
 	}
 }
 
-void
-activate(LV2_Handle instance)
+void activate(LV2_Handle instance)
 {
 	Amp* amp = (Amp*)instance;
 }
 
-static void fftprocess(Amp* amp, float* buffer)
+static void fftprocess(Amp * amp, float *buffer)
 {
 	int iterator;
 	double* real_buffer = amp->real_buffer;
@@ -115,84 +113,42 @@ static void fftprocess(Amp* amp, float* buffer)
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		buffer[iterator] = (float)(real_buffer[iterator] / FOURIER_SIZE);
 	}
+	readindex += readcount;
+	amp->buffer_index = (amp->buffer_index + readcount) % BUFFER_SIZE;
+    } while (readindex < n_samples);
 }
 
-void
-run(LV2_Handle instance, uint32_t n_samples)
-{ 
-	Amp* amp = (Amp*)instance;
-	const float* const input  = amp->input;
-	float* const       output = amp->output;
-	float*      buffer = amp->buffer;
-	uint32_t readindex = 0;
-	uint32_t readcount;
-
-	do {
-		uint32_t iterator;
-		uint32_t bufferlength = (uint32_t)(FOURIER_SIZE - (amp->buffer_index % FOURIER_SIZE));
-		readcount = n_samples;
-		if (amp->buffer_index + readcount > bufferlength) {
-			readcount = bufferlength;
-		}
-
-		for(iterator=0; iterator < readcount; iterator++){
-			buffer[amp->buffer_index + iterator] = input[iterator];
-		}
-		if ((amp->buffer_index < FOURIER_SIZE)
-		&&  (amp->buffer_index + readcount >= FOURIER_SIZE)
-		){
-			// first half of the buffer
-			fftprocess(amp, amp->buffer);
-		}
-		if (amp->buffer_index + readcount == BUFFER_SIZE){
-			// second half of the buffer
-			// warning: pointer aritmatic
-			fftprocess(amp, amp->buffer + FOURIER_SIZE);
-		}
-		for(iterator=0; iterator < readcount; iterator++){
-			output[iterator] = buffer[((amp->buffer_index + iterator + FOURIER_SIZE) % BUFFER_SIZE)];
-		}
-		readindex += readcount;
-		amp->buffer_index = (amp->buffer_index + readcount) % BUFFER_SIZE;
-	} while(readindex < n_samples);
-}
-
-static void
-deactivate(LV2_Handle instance)
+static void deactivate(LV2_Handle instance)
 {
 }
 
-static void
-cleanup(LV2_Handle instance)
+static void cleanup(LV2_Handle instance)
 {
-	free(instance);
+    free(instance);
 }
 
-const void*
-extension_data(const char* uri)
+const void *extension_data(const char *uri)
 {
-	return NULL;
+    return NULL;
 }
 
 static const LV2_Descriptor descriptor = {
-	AMP_URI,
-	instantiate,
-	connect_port,
-	activate,
-	run,
-	deactivate,
-	cleanup,
-	extension_data
+    AMP_URI,
+    instantiate,
+    connect_port,
+    activate,
+    run,
+    deactivate,
+    cleanup,
+    extension_data
 };
 
-LV2_SYMBOL_EXPORT
-const LV2_Descriptor*
-lv2_descriptor(uint32_t index)
+LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {
-	switch (index) {
-	case 0:
-		return &descriptor;
-	default:
-		return NULL;
-	}
+    switch (index) {
+    case 0:
+	return &descriptor;
+    default:
+	return NULL;
+    }
 }

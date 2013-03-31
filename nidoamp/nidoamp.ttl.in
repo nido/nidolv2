@@ -4,6 +4,7 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix bufsz: <http://lv2plug.in/ns/ext/buf-size/> .
+@prefix ll: <http://ll-plugins.nongnu.org/lv2/namespace#> .
 
 <http://nidomedia.com/#me>
 	a foaf:Person ;
@@ -22,8 +23,9 @@
 	doap:maintainer <http://nidomedia.com/#me> ;
 	doap:name "Nido Spectral Filter" ;
 	doap:license <http://opensource.org/licenses/isc> ;
+	ll:pegName "nidoamp";
 	lv2:optionalFeature bufsz:fixedBlockLength ;
-@COMPLEX_SIZE@
+#@COMPLEX_SIZE@
 	bufsz:minBlockLength @FOURIER_SIZE@ ;
 	bufsz:maxBlockLength @FOURIER_SIZE@ ;
 	lv2:port [

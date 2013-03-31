@@ -21,7 +21,12 @@
 #include <string.h>
 
 #include <stdbool.h>
+
+#ifndef S_SPLINT_S
 #include <complex.h>
+#endif
+
+
 #include <fftw3.h>
 
 //#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
@@ -57,6 +62,7 @@ instantiate(const LV2_Descriptor * descriptor,
 	    const char *bundle_path, const LV2_Feature * const *features)
 {
 	Amp* amp = malloc(sizeof(Amp));
+	assert(amp != NULL);
 	amp->complex_buffer = fftw_malloc(sizeof(fftw_complex) * COMPLEX_SIZE);
 	amp->real_buffer = fftw_malloc(sizeof(double) * (FOURIER_SIZE));
 	// todo: malloc when latency is implemented.

@@ -19,4 +19,7 @@ nidoampdir = @lv2dir@/nidoamp.lv2
 .ttl.peg:
 	lv2peg $< $@
 
+indent: $(SOURCES)
+	indent -kr $^
+
 CLEANFILES=manifest.ttl

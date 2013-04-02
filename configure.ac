@@ -11,6 +11,7 @@ AC_PROG_LIBTOOL
 AC_TYPE_UINT32_T
 
 #AC_CHECK_LIB([fftw3], [fftw_malloc],, [AC_MSG_ERROR([fftw3 required])],[]) 
+AC_CHECK_LIB([m], [cosf],,AC_MSG_ERROR([Cannot find cosf() function in libm]),[])
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_c2r_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
 AC_CHECK_LIB([fftw3f], [fftwf_malloc],, [AC_MSG_ERROR([fftw3 float version required])],[]) 

@@ -26,22 +26,22 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor,
 {
     Amp *amp = malloc(sizeof(Amp));
     assert(amp != NULL);
-    amp->complex_buffer = fftw_malloc(sizeof(fftw_complex) * COMPLEX_SIZE);
+    amp->complex_buffer = fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->complex_buffer != NULL);
-    amp->real_buffer = fftw_malloc(sizeof(double) * (FOURIER_SIZE));
+    amp->real_buffer = fftwf_malloc(sizeof(double) * (FOURIER_SIZE));
     assert(amp->real_buffer != NULL);
     // todo: malloc when latency is implemented.
-    amp->in_buffer = fftw_malloc(sizeof(float) * FOURIER_SIZE);
+    amp->in_buffer = fftwf_malloc(sizeof(float) * FOURIER_SIZE);
     assert(amp->in_buffer != NULL);
-    amp->out_buffer = fftw_malloc(sizeof(float) * FOURIER_SIZE);
+    amp->out_buffer = fftwf_malloc(sizeof(float) * FOURIER_SIZE);
     assert(amp->out_buffer != NULL);
     amp->buffer_index = 0;
     amp->forward =
-	fftw_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer,
+	fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer,
 			     amp->complex_buffer, FFTW_ESTIMATE);
     assert(amp->forward != NULL);
     amp->backward =
-	fftw_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer,
+	fftwf_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer,
 			     amp->real_buffer, FFTW_ESTIMATE);
     assert(amp->backward != NULL);
 
@@ -69,7 +69,7 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
     }
 }
 
-static void activate(LV2_Handle instance)
+void activate(LV2_Handle instance)
 {
     Amp *amp = (Amp *) instance;
     // making this zero (float zero's are zero too)
@@ -80,8 +80,8 @@ static void activate(LV2_Handle instance)
 static void fftprocess(Amp * amp)
 {
     int iterator;
-    double *real_buffer = amp->real_buffer;
-    fftw_complex *complex_buffer = amp->complex_buffer;
+    float*real_buffer = amp->real_buffer;
+    fftwf_complex *complex_buffer = amp->complex_buffer;
     int hipass = (int) *(amp->hipass);
     float in;
     float out;
@@ -98,7 +98,7 @@ static void fftprocess(Amp * amp)
     start = amp->in_buffer[0];
     stop = amp->in_buffer[FOURIER_SIZE - 1];
 //      printf("in: %f", amp->in_buffer[FOURIER_SIZE - 1]);
-    fftw_execute(amp->forward);
+    fftwf_execute(amp->forward);
 
     for (iterator = 0; iterator < COMPLEX_SIZE; iterator++) {
 	if (iterator < hipass) {
@@ -106,7 +106,7 @@ static void fftprocess(Amp * amp)
 	}
     }
 
-    fftw_execute(amp->backward);
+    fftwf_execute(amp->backward);
 
     for (iterator = 0; iterator < FOURIER_SIZE; iterator++) {
 	amp->out_buffer[iterator] =
@@ -171,14 +171,14 @@ void deactivate( /*@unused@ */ LV2_Handle instance)
 void cleanup(LV2_Handle instance)
 {
     Amp *amp = (Amp *) instance;
-    fftw_free(amp->complex_buffer);
-    fftw_free(amp->real_buffer);
-    fftw_destroy_plan(amp->forward);
-    fftw_destroy_plan(amp->backward);
-    fftw_free(amp->in_buffer);
-    fftw_free(amp->out_buffer);
+    fftwf_free(amp->complex_buffer);
+    fftwf_free(amp->real_buffer);
+    fftwf_destroy_plan(amp->forward);
+    fftwf_destroy_plan(amp->backward);
+    fftwf_free(amp->in_buffer);
+    fftwf_free(amp->out_buffer);
     free(instance);
-    fftw_cleanup();
+    fftwf_cleanup();
 }
 
 /*@null@*/ static const void *extension_data( /*@unused@ */ const char

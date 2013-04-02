@@ -10,7 +10,11 @@ AC_PROG_LIBTOOL
 
 AC_TYPE_UINT32_T
 
-AC_CHECK_LIB([fftw3], [fftw_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 required])],[]) 
+#AC_CHECK_LIB([fftw3], [fftw_malloc],, [AC_MSG_ERROR([fftw3 required])],[]) 
+AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
+AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_c2r_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
+AC_CHECK_LIB([fftw3f], [fftwf_malloc],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
+AC_CHECK_LIB([fftw3f], [fftwf_execute],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
 
 
 AC_ENABLE_SHARED
@@ -27,8 +31,8 @@ maintainer_mode=no
 )
 
 #if test "$maintainer_mode" = "yes"; then
-CFLAGS="$CFLAGS -g -O0 -Wall"
-CXXFLAGS="$CXXFLAGS -g -O0 -Wall"
+AM_CFLAGS="$CFLAGS -g -O0 -Wall"
+AM_CXXFLAGS="$CXXFLAGS -g -O0 -Wall"
 #fi
 
 AC_ARG_WITH(fouriersize,

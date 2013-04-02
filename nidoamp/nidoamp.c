@@ -68,6 +68,7 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
 	break;
     case nidoamp_latency:
 	amp->latency = (float *) data;
+	// latency is pretty static
 	*(amp->latency) = FOURIER_SIZE;
 	break;
     case nidoamp_n_ports:

@@ -24,7 +24,6 @@
 	doap:name "Nido Spectral Filter" ;
 	doap:license <http://opensource.org/licenses/isc> ;
 	ll:pegName "nidoamp";
-	lv2:Latency @FOURIER_SIZE@ ;
 	lv2:optionalFeature bufsz:fixedBlockLength ;
 	bufsz:minBlockLength @FOURIER_SIZE@ ;
 	bufsz:maxBlockLength @FOURIER_SIZE@ ;
@@ -59,6 +58,8 @@
 		a lv2:ControlPort , lv2:OutputPort ;
 		lv2:symbol "latency";
    		lv2:name "Latency";
+		lv2:default @FOURIER_SIZE@ ;
 		lv2:index 4;
+		lv2:portProperty lv2:reportsLatency ;
 	] .
 

@@ -8,5 +8,4 @@ bin_SCRIPTS = lv2wisdom.sh
 
 ACLOCAL_AMFLAGS = -I .
 SUBDIRS = nidoamp
-AM_LDFLAGS = @AM_LDFLAGS@
 datarootdir = @datarootdir@

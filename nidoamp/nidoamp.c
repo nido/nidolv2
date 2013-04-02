@@ -26,7 +26,8 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor,
 {
     Amp *amp = malloc(sizeof(Amp));
     assert(amp != NULL);
-    amp->complex_buffer = fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
+    amp->complex_buffer =
+	fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->complex_buffer != NULL);
     amp->real_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
     assert(amp->real_buffer != NULL);
@@ -38,11 +39,11 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor,
     amp->buffer_index = 0;
     amp->forward =
 	fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer,
-			     amp->complex_buffer, FFTW_ESTIMATE);
+			      amp->complex_buffer, FFTW_ESTIMATE);
     assert(amp->forward != NULL);
     amp->backward =
 	fftwf_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer,
-			     amp->real_buffer, FFTW_ESTIMATE);
+			      amp->real_buffer, FFTW_ESTIMATE);
     assert(amp->backward != NULL);
 
     return (LV2_Handle) amp;
@@ -87,7 +88,7 @@ void activate(LV2_Handle instance)
 static void fftprocess(Amp * amp)
 {
     int iterator;
-    float*real_buffer = amp->real_buffer;
+    float *real_buffer = amp->real_buffer;
     fftwf_complex *complex_buffer = amp->complex_buffer;
     int hipass = (int) *(amp->hipass);
     int lopass = (int) *(amp->hipass);
@@ -206,7 +207,8 @@ const LV2_Descriptor descriptor = {
     extension_data
 };
 
-/*@null@*/ LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index)
+/*@null@*/ LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t
+								  index)
 {
     switch (index) {
     case 0:

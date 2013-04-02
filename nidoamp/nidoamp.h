@@ -30,5 +30,5 @@ void activate(LV2_Handle instance);
 void run(LV2_Handle instance, uint32_t n_samples);
 void deactivate(LV2_Handle instance);
 void cleanup( /*@only@ */ LV2_Handle instance);
-	   /*@null@*//*@shared@ */ LV2_SYMBOL_EXPORT const LV2_Descriptor
-    *lv2_descriptor(uint32_t index);
+		     /*@null@ *//*@shared@ */ LV2_SYMBOL_EXPORT const LV2_Descriptor
+* lv2_descriptor(uint32_t index);

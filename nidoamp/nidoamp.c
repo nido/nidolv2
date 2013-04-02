@@ -17,6 +17,7 @@
 */
 
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <stdbool.h>
@@ -95,17 +96,21 @@ static void fftprocess(Amp * amp)
 	double* real_buffer = amp->real_buffer;
 	fftw_complex* complex_buffer = amp->complex_buffer;
 	int hipass = (int) *(amp->hipass);
-	double start;
-	double stop;
-	double slope;
-	double centre;
+	float in;
+	float out;
+	float start;
+	float stop;
+	float slope;
+	float centre;
 
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		real_buffer[iterator] = amp->in_buffer[iterator];
 	}
+	in = amp->in_buffer[0];
+	out = amp->in_buffer[FOURIER_SIZE - 1];
 	start = amp->in_buffer[0];
 	stop = amp->in_buffer[FOURIER_SIZE - 1];
-	printf("in: %f", amp->in_buffer[FOURIER_SIZE - 1]);
+//	printf("in: %f", amp->in_buffer[FOURIER_SIZE - 1]);
 	fftw_execute(amp->forward);
 
 	for (iterator = 0; iterator < COMPLEX_SIZE; iterator++){
@@ -119,18 +124,20 @@ static void fftprocess(Amp * amp)
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
 		amp->out_buffer[iterator] = (float)((real_buffer[iterator]) / FOURIER_SIZE);
 	}
-	// naive smoothing
 	start -= amp->out_buffer[0];
 	stop -= amp->out_buffer[FOURIER_SIZE - 1];
-	slope = (stop - start) / 2;
+	slope = (start - stop) / 2;
 	centre = start - slope;
+	// naive smoothing
+	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
+		amp->out_buffer[iterator] += centre + slope * cosf(iterator * (M_PI) / (FOURIER_SIZE-1));
+	}
+	in -= amp->out_buffer[0];
+	out -= amp->out_buffer[FOURIER_SIZE - 1];
 	
-	printf(", out: %f\n", amp->out_buffer[FOURIER_SIZE - 1]);
-	printf("%f, %f, %f, %f\n", start, stop, centre, slope);
+//	printf(", out: %f\n", amp->out_buffer[FOURIER_SIZE - 1]);
+//	printf("%f, %f, %f, %f\n", in, out, centre, slope);
 
-//	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
-//		amp->out_buffer[iterator] += centre + slope * cosf(iterator * (M_PI / 2) / FOURIER_SIZE);
-//	}
 }
 
 void
@@ -186,6 +193,17 @@ void cleanup(LV2_Handle instance)
 {
     return NULL;
 }
+
+const LV2_Descriptor descriptor = {
+        nidoamp_uri,
+        instantiate,
+        connect_port,
+        activate,
+        run,
+        deactivate,
+        cleanup,
+        extension_data
+};
 
 LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {

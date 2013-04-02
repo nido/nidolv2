@@ -4,3 +4,7 @@ not much yet
 
 to make ./configure, run: mkdir m4; autoreconf -si
 mkdir is needed because libtool is set up to put stuff there and thus configure.ac expects the directory to exists
+
+maintainer requirements:
+autoconf-archive
+libtool

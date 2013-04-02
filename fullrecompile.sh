@@ -2,7 +2,4 @@
 # full cleanup if possible
 test -f Makefile && make maintainer-clean
 
-# create directory needed
-test -d m4 || mkdir m4
-
-autoreconf -fsi && ./configure && make
+autoreconf -si && ./configure --with-fouriersize=512 --bindir=${home}/bin --with-lv2dir=${HOME}/.lv2 && make check

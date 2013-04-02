@@ -12,7 +12,9 @@ int main(void)
     float hipass;
     LV2_Handle handle;
     int i;
+    int j;
 
+    j=0;
     hipass = 1.0;
     buffer = malloc(sizeof(float) * DATASIZE);
     if (buffer == NULL) {
@@ -28,7 +30,13 @@ int main(void)
     connect_port(handle, 1, buffer);
     connect_port(handle, 2, buffer);
     activate(handle);
-    run(handle, DATASIZE);
+    for (i=0; i < DATASIZE; i+=j){
+	j = rand();
+	if (i + j > DATASIZE){
+		j = DATASIZE - i;
+	}
+    	run(handle, j);
+    }
     deactivate(handle);
     cleanup(handle);
     free(buffer);

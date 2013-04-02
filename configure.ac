@@ -60,11 +60,12 @@ AC_SUBST(lv2dir)
 AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]*'`])
 
 AM_CFLAGS="$AM_CFLAGS -Wall"
-AM_CXXFLAGS="$AM_CXXFLAGS -Wall"
-if test "$maintainer_mode" != "yes"; then
+
+if test "$maintainer_mode" = "yes"; then
 AM_CFLAGS="$AM_CFLAGS -Werror -g -O0"
-AM_CXXFLAGS="$AM_CXXFLAGS -Werror -g -O0"
 fi
+
+AC_SUBST(AM_CFLAGS)
 
 AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh])
 AC_OUTPUT

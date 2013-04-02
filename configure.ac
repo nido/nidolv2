@@ -10,8 +10,15 @@ AC_PROG_LIBTOOL
 
 AC_TYPE_UINT32_T
 
+AC_CHECK_HEADERS(assert.h complex.h math.h stdbool.h stddef.h stdio.h stdlib.h strings.h, [],
+	[AC_MSG_ERROR([Cant find standard include headers])],[]
+)
+
+AC_CHECK_HEADER([lv2.h], [], [AC_MSG_ERROR([need lv2 header file])], [])
+AC_CHECK_HEADER([fftw3.h], [], [AC_MSG_ERROR([need fftw3 header file])], [])
 #AC_CHECK_LIB([fftw3], [fftw_malloc],, [AC_MSG_ERROR([fftw3 required])],[]) 
-AC_CHECK_LIB([m], [cosf],,AC_MSG_ERROR([Cannot find cosf() function in libm]),[])
+
+AC_CHECK_LIB([m], [cos],,AC_MSG_ERROR([Cannot find cos() function in libm]),[])
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_c2r_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
 AC_CHECK_LIB([fftw3f], [fftwf_malloc],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
@@ -30,11 +37,6 @@ maintainer_mode=yes
 maintainer_mode=no
 ]
 )
-
-#if test "$maintainer_mode" = "yes"; then
-AM_CFLAGS="$CFLAGS -g -O0 -Wall"
-AM_CXXFLAGS="$CXXFLAGS -g -O0 -Wall"
-#fi
 
 AC_ARG_WITH(fouriersize,
 [--with-fouriersize=SIZE  Use SIZE as the size of the fourier transform (default=512)],
@@ -56,6 +58,13 @@ lv2dir='$(libdir)/lv2')
 AC_SUBST(lv2dir)
 
 AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]*'`])
+
+AM_CFLAGS="$AM_CFLAGS -Wall"
+AM_CXXFLAGS="$AM_CXXFLAGS -Wall"
+if test "$maintainer_mode" != "yes"; then
+AM_CFLAGS="$AM_CFLAGS -Werror -g -O0"
+AM_CXXFLAGS="$AM_CXXFLAGS -Werror -g -O0"
+fi
 
 AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh])
 AC_OUTPUT

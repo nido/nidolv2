@@ -16,22 +16,13 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <math.h>
+#include <assert.h>
 #include <stdlib.h>
-#include <string.h>
-
+#include <strings.h>
 #include <stdbool.h>
-
-#ifndef S_SPLINT_S
-#include <complex.h>
-#endif
-
-
-#include <fftw3.h>
-
-//#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include <lv2.h>
 
+#include "nidoamp.h"
 #include "nidoamp.peg"
 
 
@@ -43,41 +34,33 @@
 #define COMPLEX_SIZE (FOURIER_SIZE / 2 + 1)
 #endif
 
-typedef struct {
-	float* hipass;
-	float* input;
-	float* output;
-	fftw_complex* complex_buffer;
-	double* real_buffer;
-	float* inbuffer;
-	float* outbuffer;
-	int buffer_index;
-	fftw_plan forward;
-	fftw_plan backward;
-} Amp;
-
 LV2_Handle
-instantiate(const LV2_Descriptor * descriptor,
-	    double rate,
-	    const char *bundle_path, const LV2_Feature * const *features)
+instantiate(/*@unused@*/ const LV2_Descriptor * descriptor,
+	    /*@unused@*/ double rate,
+	    /*@unused@*/ const char *bundle_path,
+	    /*@unused@*/ const LV2_Feature * const *features)
 {
 	Amp* amp = malloc(sizeof(Amp));
 	assert(amp != NULL);
 	amp->complex_buffer = fftw_malloc(sizeof(fftw_complex) * COMPLEX_SIZE);
+	assert(amp->complex_buffer != NULL);
 	amp->real_buffer = fftw_malloc(sizeof(double) * (FOURIER_SIZE));
+	assert(amp->real_buffer != NULL);
 	// todo: malloc when latency is implemented.
-	amp->inbuffer = calloc(sizeof(float), FOURIER_SIZE);
-	amp->outbuffer = calloc(sizeof(float), FOURIER_SIZE);
+	amp->in_buffer = fftw_malloc(sizeof(float) * FOURIER_SIZE);
+	assert(amp->in_buffer != NULL);
+	amp->out_buffer = fftw_malloc(sizeof(float) * FOURIER_SIZE);
+	assert(amp->out_buffer != NULL);
 	amp->buffer_index = 0;
 	amp->forward = fftw_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer, amp->complex_buffer, FFTW_ESTIMATE);
+	assert(amp->forward != NULL);
 	amp->backward =  fftw_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer, amp->real_buffer, FFTW_ESTIMATE);
-	// making this zero (float zero's are zero too)
-	amp->outbuffer = memset(amp->real_buffer, 0, sizeof(float) * FOURIER_SIZE);
+	assert(amp->backward != NULL);
 
     return (LV2_Handle) amp;
 }
 
-static void connect_port(LV2_Handle instance, uint32_t port, void *data)
+void connect_port(LV2_Handle instance, uint32_t port, void *data)
 {
 	Amp* amp = (Amp*)instance;
 
@@ -91,12 +74,19 @@ static void connect_port(LV2_Handle instance, uint32_t port, void *data)
 	case nidoamp_out:
 		amp->output = (float*)data;
 		break;
+	case nidoamp_n_ports:
+		printf("%s severely broken\n", nidoamp_uri);
+		exit(EXIT_FAILURE);
+		break;
 	}
 }
 
 void activate(LV2_Handle instance)
 {
 	Amp* amp = (Amp*)instance;
+	// making this zero (float zero's are zero too)
+	bzero(amp->real_buffer, sizeof(float) * FOURIER_SIZE);
+	bzero(amp->real_buffer, sizeof(float) * FOURIER_SIZE);
 }
 
 static void fftprocess(Amp * amp)
@@ -111,12 +101,11 @@ static void fftprocess(Amp * amp)
 	double centre;
 
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
-		real_buffer[iterator] = amp->inbuffer[iterator];
+		real_buffer[iterator] = amp->in_buffer[iterator];
 	}
-
-	start = amp->real_buffer[0];
-	stop = amp->real_buffer[FOURIER_SIZE - 1];
-
+	start = amp->in_buffer[0];
+	stop = amp->in_buffer[FOURIER_SIZE - 1];
+	printf("in: %f", amp->in_buffer[FOURIER_SIZE - 1]);
 	fftw_execute(amp->forward);
 
 	for (iterator = 0; iterator < COMPLEX_SIZE; iterator++){
@@ -127,20 +116,20 @@ static void fftprocess(Amp * amp)
 
 	fftw_execute(amp->backward);
 
-
 	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
-		amp->outbuffer[iterator] = (float)((real_buffer[iterator]) / FOURIER_SIZE);
+		amp->out_buffer[iterator] = (float)((real_buffer[iterator]) / FOURIER_SIZE);
 	}
 	// naive smoothing
-	start -= amp->real_buffer[0]/FOURIER_SIZE;
-	stop -= amp->real_buffer[FOURIER_SIZE - 1]/FOURIER_SIZE;
+	start -= amp->out_buffer[0];
+	stop -= amp->out_buffer[FOURIER_SIZE - 1];
 	slope = (stop - start) / 2;
 	centre = start - slope;
 	
+	printf(", out: %f\n", amp->out_buffer[FOURIER_SIZE - 1]);
 	printf("%f, %f, %f, %f\n", start, stop, centre, slope);
 
 //	for (iterator = 0; iterator < FOURIER_SIZE; iterator++){
-//		amp->outbuffer[iterator] += centre + slope * cosf(iterator * (M_PI / 2) / FOURIER_SIZE);
+//		amp->out_buffer[iterator] += centre + slope * cosf(iterator * (M_PI / 2) / FOURIER_SIZE);
 //	}
 }
 
@@ -150,9 +139,9 @@ run(LV2_Handle instance, uint32_t n_samples)
         Amp* amp = (Amp*)instance;
         const float* const input  = amp->input;
         float* const       output = amp->output;
-        float*      inbuffer = amp->inbuffer;
-        float*      outbuffer = amp->outbuffer;
         uint32_t io_index = 0;
+        float*      in_buffer = amp->in_buffer;
+        float*      out_buffer = amp->out_buffer;
         uint32_t readcount;
 
         do {
@@ -164,42 +153,39 @@ run(LV2_Handle instance, uint32_t n_samples)
                 }
 
                 for(iterator=0; iterator < readcount; iterator++){
-                        inbuffer[amp->buffer_index + iterator] = input[io_index + iterator];
-			output[io_index + iterator] = outbuffer[amp->buffer_index + iterator];
+                        in_buffer[amp->buffer_index + iterator] = input[io_index + iterator];
+			output[io_index + iterator] = out_buffer[amp->buffer_index + iterator];
                 }
 
                 if (amp->buffer_index + readcount == FOURIER_SIZE){
                         fftprocess(amp);
                 }
 	io_index += readcount;
-	amp->buffer_index = (amp->buffer_index + readcount) % FOURIER_SIZE;
+	amp->buffer_index = (int)(amp->buffer_index + readcount) % FOURIER_SIZE;
     } while (io_index < n_samples);
 }
 
-static void deactivate(LV2_Handle instance)
+void deactivate(/*@unused@*/LV2_Handle instance)
 {
 }
 
-static void cleanup(LV2_Handle instance)
+void cleanup(LV2_Handle instance)
 {
-    free(instance);
+        Amp* amp = (Amp*)instance;
+	fftw_free(amp->complex_buffer);
+	fftw_free(amp->real_buffer);
+	fftw_destroy_plan(amp->forward);
+	fftw_destroy_plan(amp->backward);
+	fftw_free(amp->in_buffer);
+	fftw_free(amp->out_buffer);
+    	free(instance);
+	fftw_cleanup();
 }
 
-const void *extension_data(const char *uri)
+/*@null@*/ static const void *extension_data(/*@unused@*/const char *uri)
 {
     return NULL;
 }
-
-static const LV2_Descriptor descriptor = {
-    nidoamp_uri,
-    instantiate,
-    connect_port,
-    activate,
-    run,
-    deactivate,
-    cleanup,
-    extension_data
-};
 
 LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {

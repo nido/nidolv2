@@ -128,7 +128,7 @@ static void fftprocess(Amp * amp)
     // naive smoothing
     for (iterator = 0; iterator < FOURIER_SIZE; iterator++) {
 	amp->out_buffer[iterator] +=
-	    centre + slope * cosf(iterator * (M_PI) / (FOURIER_SIZE - 1));
+	    centre + slope * cosf(iterator * (M_PI) / FOURIER_SIZE);
     }
     in -= amp->out_buffer[0];
     out -= amp->out_buffer[FOURIER_SIZE - 1];
@@ -156,10 +156,11 @@ void run(LV2_Handle instance, uint32_t n_samples)
 	if (amp->buffer_index + readcount > bufferlength) {
 	    readcount = bufferlength;
 	}
-
+	if (io_index + readcount > n_samples) {
+	    readcount = n_samples - io_index;
+	}
 	for (iterator = 0; iterator < readcount; iterator++) {
-	    in_buffer[amp->buffer_index + iterator] =
-		input[io_index + iterator];
+	    in_buffer[amp->buffer_index + iterator] = input[io_index + iterator];	// this line crashes sometimes
 	    output[io_index + iterator] =
 		out_buffer[amp->buffer_index + iterator];
 	}

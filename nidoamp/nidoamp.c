@@ -28,7 +28,7 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor,
     assert(amp != NULL);
     amp->complex_buffer = fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->complex_buffer != NULL);
-    amp->real_buffer = fftwf_malloc(sizeof(double) * (FOURIER_SIZE));
+    amp->real_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
     assert(amp->real_buffer != NULL);
     // todo: malloc when latency is implemented.
     amp->in_buffer = fftwf_malloc(sizeof(float) * FOURIER_SIZE);

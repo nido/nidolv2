@@ -9,13 +9,13 @@ typedef struct {
     float *hipass;
     float *input;
     float *output;
-    fftw_complex *complex_buffer;
-    double *real_buffer;
+    fftwf_complex *complex_buffer;
+    float*real_buffer;
     float *in_buffer;
     float *out_buffer;
     int buffer_index;
-    fftw_plan forward;
-    fftw_plan backward;
+    fftwf_plan forward;
+    fftwf_plan backward;
 } Amp;
 
 const LV2_Descriptor descriptor;

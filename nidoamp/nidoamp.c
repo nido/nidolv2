@@ -65,6 +65,10 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
     case nidoamp_out:
 	amp->output = (float *) data;
 	break;
+    case nidoamp_latency:
+	amp->latency = (float *) data;
+	*(amp->latency) = FOURIER_SIZE;
+	break;
     case nidoamp_n_ports:
 	printf("%s severely broken\n", nidoamp_uri);
 	exit(EXIT_FAILURE);

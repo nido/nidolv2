@@ -10,8 +10,9 @@ typedef struct {
     float *lopass;
     float *input;
     float *output;
+    float *latency;
     fftwf_complex *complex_buffer;
-    float*real_buffer;
+    float *real_buffer;
     float *in_buffer;
     float *out_buffer;
     int buffer_index;

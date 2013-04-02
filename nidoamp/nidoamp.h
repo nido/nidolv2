@@ -7,6 +7,7 @@
 
 typedef struct {
     float *hipass;
+    float *lopass;
     float *input;
     float *output;
     fftwf_complex *complex_buffer;

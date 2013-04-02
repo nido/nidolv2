@@ -56,6 +56,9 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
     case nidoamp_hipass:
 	amp->hipass = (float *) data;
 	break;
+    case nidoamp_lopass:
+	amp->lopass = (float *) data;
+	break;
     case nidoamp_in:
 	amp->input = (float *) data;
 	break;
@@ -83,6 +86,7 @@ static void fftprocess(Amp * amp)
     float*real_buffer = amp->real_buffer;
     fftwf_complex *complex_buffer = amp->complex_buffer;
     int hipass = (int) *(amp->hipass);
+    int lopass = (int) *(amp->hipass);
     float in;
     float out;
     float start;
@@ -101,7 +105,7 @@ static void fftprocess(Amp * amp)
     fftwf_execute(amp->forward);
 
     for (iterator = 0; iterator < COMPLEX_SIZE; iterator++) {
-	if (iterator < hipass) {
+	if ((iterator < hipass) || (iterator > lopass)) {
 	    complex_buffer[iterator] *= 0.0;
 	}
     }

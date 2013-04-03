@@ -70,6 +70,9 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
     case nidoamp_latency:
 	amp->latency = (float *) data;
 	break;
+    case nidoamp_gate:
+	amp->gate = (float *) data;
+	break;
     case nidoamp_n_ports:
 	printf("%s severely broken\n", nidoamp_uri);
 	exit(EXIT_FAILURE);
@@ -115,7 +118,10 @@ static void fftprocess(Amp * amp)
     fftwf_execute(amp->forward);
 
     for (iterator = 0; iterator < COMPLEX_SIZE; iterator++) {
-	if ((iterator < hipass) || (iterator > lopass)) {
+	if((iterator < hipass)
+        || (iterator > lopass) 
+        || (powf(cabsf(complex_buffer[iterator]), 2.0) < *(amp->gate))
+	){
 	    complex_buffer[iterator] *= 0.0;
 	}
     }

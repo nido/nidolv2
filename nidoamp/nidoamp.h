@@ -11,6 +11,7 @@ typedef struct {
     float *input;
     float *output;
     float *latency;
+    float *gate;
     fftwf_complex *complex_buffer;
     float *real_buffer;
     float *in_buffer;

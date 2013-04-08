@@ -29,6 +29,9 @@ int main(void)
     connect_port(handle, 0, &hipass);
     connect_port(handle, 1, buffer);
     connect_port(handle, 2, buffer);
+    connect_port(handle, 3, &hipass);
+    connect_port(handle, 5, &hipass);
+    connect_port(handle, 4, buffer);
     activate(handle);
     for (i = 0; i < DATASIZE; i += j) {
 	j = rand();
@@ -40,5 +43,6 @@ int main(void)
     deactivate(handle);
     cleanup(handle);
     free(buffer);
+    fftwf_cleanup();
     return (0);
 }

@@ -18,11 +18,11 @@ int main(void)
     hipass = 1.0;
     buffer = malloc(sizeof(float) * DATASIZE);
     if (buffer == NULL) {
-	printf("%s\n", "Not enough memory");
-	exit(EXIT_FAILURE);
+        printf("%s\n", "Not enough memory");
+        exit(EXIT_FAILURE);
     }
     for (i = 0; i < DATASIZE; i++) {
-	buffer[i] = (float) rand() / RAND_MAX * 2 - 1;
+        buffer[i] = (float) rand() / RAND_MAX * 2 - 1;
     }
 
     handle = instantiate(&descriptor, 96000.0, "Irrelevant", NULL);
@@ -34,11 +34,11 @@ int main(void)
     connect_port(handle, 4, buffer);
     activate(handle);
     for (i = 0; i < DATASIZE; i += j) {
-	j = rand();
-	if (i + j > DATASIZE) {
-	    j = DATASIZE - i;
-	}
-	run(handle, j);
+        j = rand();
+        if (i + j > DATASIZE) {
+            j = DATASIZE - i;
+        }
+        run(handle, j);
     }
     deactivate(handle);
     cleanup(handle);

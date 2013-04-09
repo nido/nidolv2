@@ -6,6 +6,6 @@ indent-recurse: $(SUBDIRS)
 	done;
 
 indent-local:  $(SOURCES)
-	test -z "$(SOURCES)" || indent -kr $^
+	test -z "$(SOURCES)" || indent -kr -nut -d0 $^
 
 .PHONY: indent

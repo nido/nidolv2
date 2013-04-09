@@ -1,7 +1,7 @@
 nidoamp_LTLIBRARIES = nidoamp.la
 nidoamp_DATA = nidoamp.ttl manifest.ttl
 check_PROGRAMS = test_nidoamp
-TESTS = $(check_PROGRAMS)
+TESTS = $(check_PROGRAMS) cppcheck
 
 nidoamp_la_SOURCES = nidoamp.c nidoamp.h nidoamp.peg
 nidoamp_la_LDFLAGS = -module -avoid-version -shared

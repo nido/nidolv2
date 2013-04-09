@@ -20,15 +20,15 @@
 #endif
 
 LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor,
-		       /*@unused@ */ double rate,
-		       /*@unused@ */ const char *bundle_path,
-		       /*@unused@ */ const LV2_Feature * const *features)
+                       /*@unused@ */ double rate,
+                       /*@unused@ */ const char *bundle_path,
+                       /*@unused@ */ const LV2_Feature * const *features)
 {
     Amp *amp = malloc(sizeof(Amp));
 
     assert(amp != NULL);
     amp->complex_buffer =
-	fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
+        fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->complex_buffer != NULL);
     amp->real_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
     assert(amp->real_buffer != NULL);
@@ -39,12 +39,12 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor,
     assert(amp->out_buffer != NULL);
     amp->buffer_index = 0;
     amp->forward =
-	fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer,
-			      amp->complex_buffer, FFTW_ESTIMATE);
+        fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer,
+                              amp->complex_buffer, FFTW_ESTIMATE);
     assert(amp->forward != NULL);
     amp->backward =
-	fftwf_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer,
-			      amp->real_buffer, FFTW_ESTIMATE);
+        fftwf_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer,
+                              amp->real_buffer, FFTW_ESTIMATE);
     assert(amp->backward != NULL);
 
     return (LV2_Handle) amp;
@@ -56,27 +56,27 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
 
     switch ((enum nidoamp_port_enum) port) {
     case nidoamp_hipass:
-	amp->hipass = (float *) data;
-	break;
+        amp->hipass = (float *) data;
+        break;
     case nidoamp_lopass:
-	amp->lopass = (float *) data;
-	break;
+        amp->lopass = (float *) data;
+        break;
     case nidoamp_in:
-	amp->input = (float *) data;
-	break;
+        amp->input = (float *) data;
+        break;
     case nidoamp_out:
-	amp->output = (float *) data;
-	break;
+        amp->output = (float *) data;
+        break;
     case nidoamp_latency:
-	amp->latency = (float *) data;
-	break;
+        amp->latency = (float *) data;
+        break;
     case nidoamp_gate:
-	amp->gate = (float *) data;
-	break;
+        amp->gate = (float *) data;
+        break;
     case nidoamp_n_ports:
-	printf("%s severely broken\n", nidoamp_uri);
-	exit(EXIT_FAILURE);
-	break;
+        printf("%s severely broken\n", nidoamp_uri);
+        exit(EXIT_FAILURE);
+        break;
     }
 
 }
@@ -108,7 +108,7 @@ static void fftprocess(Amp * amp)
 
 
     for (iterator = 0; iterator < FOURIER_SIZE; iterator++) {
-	real_buffer[iterator] = amp->in_buffer[iterator];
+        real_buffer[iterator] = amp->in_buffer[iterator];
     }
     in = amp->in_buffer[0];
     out = amp->in_buffer[FOURIER_SIZE - 1];
@@ -118,19 +118,19 @@ static void fftprocess(Amp * amp)
     fftwf_execute(amp->forward);
 
     for (iterator = 0; iterator < COMPLEX_SIZE; iterator++) {
-	if((iterator < hipass)
-        || (iterator > lopass) 
-        || (powf(cabsf(complex_buffer[iterator]), 2.0) < *(amp->gate))
-	){
-	    complex_buffer[iterator] *= 0.0;
-	}
+        if ((iterator < hipass)
+            || (iterator > lopass)
+            || (powf(cabsf(complex_buffer[iterator]), 2.0) < *(amp->gate))
+            ) {
+            complex_buffer[iterator] *= 0.0;
+        }
     }
 
     fftwf_execute(amp->backward);
 
     for (iterator = 0; iterator < FOURIER_SIZE; iterator++) {
-	amp->out_buffer[iterator] =
-	    (float) ((real_buffer[iterator]) / FOURIER_SIZE);
+        amp->out_buffer[iterator] =
+            (float) ((real_buffer[iterator]) / FOURIER_SIZE);
     }
     start -= amp->out_buffer[0];
     stop -= amp->out_buffer[FOURIER_SIZE - 1];
@@ -138,8 +138,8 @@ static void fftprocess(Amp * amp)
     centre = start - slope;
     // naive smoothing
     for (iterator = 0; iterator < FOURIER_SIZE; iterator++) {
-	amp->out_buffer[iterator] +=
-	    centre + slope * cosf(iterator * (M_PI) / FOURIER_SIZE);
+        amp->out_buffer[iterator] +=
+            centre + slope * cosf(iterator * (M_PI) / FOURIER_SIZE);
     }
     in -= amp->out_buffer[0];
     out -= amp->out_buffer[FOURIER_SIZE - 1];
@@ -159,36 +159,37 @@ void run(LV2_Handle instance, uint32_t n_samples)
     float *out_buffer = amp->out_buffer;
     uint32_t readcount;
 
-    if (amp->latency != NULL){
-	*(amp->latency) = (float)FOURIER_SIZE;
+    if (amp->latency != NULL) {
+        *(amp->latency) = (float) FOURIER_SIZE;
     }
     do {
 
-	uint32_t iterator;
-	uint32_t bufferlength =
-	    (uint32_t) (FOURIER_SIZE - amp->buffer_index);
-	readcount = n_samples;
+        uint32_t iterator;
+        uint32_t bufferlength =
+            (uint32_t) (FOURIER_SIZE - amp->buffer_index);
+        readcount = n_samples;
 
-	if (amp->buffer_index + readcount > bufferlength) {
-	    readcount = bufferlength;
-	}
-	if (io_index + readcount > n_samples) {
-	    readcount = n_samples - io_index;
-	}
-	for (iterator = 0; iterator < readcount; iterator++) {
-	    in_buffer[amp->buffer_index + iterator] = input[io_index + iterator];
-	    output[io_index + iterator] =
-		out_buffer[amp->buffer_index + iterator];
-	}
+        if (amp->buffer_index + readcount > bufferlength) {
+            readcount = bufferlength;
+        }
+        if (io_index + readcount > n_samples) {
+            readcount = n_samples - io_index;
+        }
+        for (iterator = 0; iterator < readcount; iterator++) {
+            in_buffer[amp->buffer_index + iterator] =
+                input[io_index + iterator];
+            output[io_index + iterator] =
+                out_buffer[amp->buffer_index + iterator];
+        }
 
 
-	if (amp->buffer_index + readcount == FOURIER_SIZE) {
-	    fftprocess(amp);
-	}
+        if (amp->buffer_index + readcount == FOURIER_SIZE) {
+            fftprocess(amp);
+        }
 
-	amp->buffer_index =
-	    (int) (amp->buffer_index + readcount) % FOURIER_SIZE;
-	io_index += readcount;
+        amp->buffer_index =
+            (int) (amp->buffer_index + readcount) % FOURIER_SIZE;
+        io_index += readcount;
     } while (io_index < n_samples);
 }
 
@@ -210,7 +211,7 @@ void cleanup(LV2_Handle instance)
 }
 
 /*@null@*/ static const void *extension_data( /*@unused@ */ const char
-					     *uri)
+                                             *uri)
 {
     return NULL;
 }
@@ -227,12 +228,12 @@ const LV2_Descriptor descriptor = {
 };
 
 /*@null@*/ LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t
-								  index)
+                                                                  index)
 {
     switch (index) {
     case 0:
-	return &descriptor;
+        return &descriptor;
     default:
-	return NULL;
+        return NULL;
     }
 }

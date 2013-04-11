@@ -6,6 +6,7 @@
 
 #define DATASIZE 1048576
 
+/** Test program to run like a host to see if it actually operates and have full debug capabilities */
 int main(void)
 {
     float *buffer;

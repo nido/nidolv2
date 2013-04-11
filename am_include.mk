@@ -1,11 +1,20 @@
 indent: indent-recurse indent-local
+cppcheck: cppcheck-recurse cppcheck-local
 
 indent-recurse: $(SUBDIRS)
 	for dir in $(SUBDIRS); \
 	do cd $$dir && $(MAKE) $(AM_MAKEFLAGS) indent; \
-	done;
+	done
+
+cppcheck-recurse: $(SUBDIRS)
+	for dir in $(SUBDIRS); \
+	do cd $$dir && $(MAKE) $(AM_MAKEFLAGS) cppcheck; \
+	done
 
 indent-local:  $(SOURCES)
 	test -z "$(SOURCES)" || indent -kr -nut -ts4 -d0 $^
 
-.PHONY: indent
+cppcheck-local:  $(SOURCES)
+	test -z "$(SOURCES)" || cppcheck --error-exitcode=2 $^
+
+.PHONY: indent indent-recurse indent-local

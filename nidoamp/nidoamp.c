@@ -1,5 +1,6 @@
-/*
-*/
+/** This file implements the main parts of the nidolv2 fourier based
+ * spectral filter, as specified by LV2 on http://lv2plug.in/
+ */
 
 #include <assert.h>
 #include <math.h>
@@ -12,17 +13,26 @@
 #include "nidoamp.peg"
 
 #ifndef FOURIER_SIZE
+/** The number of samples to take a fourier transformation of. */
 #define FOURIER_SIZE 512
 #endif
 
 #ifndef COMPLEX_SIZE
+/** The size of the fourier transform output (and input for the inverse). */
 #define COMPLEX_SIZE (FOURIER_SIZE / 2 + 1)
 #endif
 
-LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor,
-                       /*@unused@ */ double rate,
-                       /*@unused@ */ const char *bundle_path,
-                       /*@unused@ */ const LV2_Feature * const *features)
+/** Instantiate the plugin.
+ *
+ * This function initialises the plugin. It includes allocating memory
+ * and fftw plans.
+ *
+ * @param descriptor argument of unknown significance
+ * @param rate the amount of samples per second thius plusin operates at
+ * @param bundle_path argument of unknownn significance
+ * @param features argument of unknown significance
+ */
+void LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor, /*@unused@ */ double rate, /*@unused@ */ const char *bundle_path, /*@unused@ */ const LV2_Feature * const *features)
 {
     Amp *amp = malloc(sizeof(Amp));
 
@@ -50,6 +60,15 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor,
     return (LV2_Handle) amp;
 }
 
+/** Connects a port to the plugin for processing.
+ * Plugins have multiple input- and outputports. In order for these to
+ * be used correctly the connect_port function allows to connect these
+ * ports to host-defined data.
+ *
+ * @param instance A Handler for the LV2 Plugin Instance.
+ * @param port The port number to connect
+ * @param data The location of/for the data for the port.port
+ */
 void connect_port(LV2_Handle instance, uint32_t port, void *data)
 {
     Amp *amp = (Amp *) instance;
@@ -81,6 +100,12 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
 
 }
 
+/** Activates the plugin.
+ * Given the relative statelessness of this plugin, all this does is
+ * toclean the buffers.
+ *
+ * @param instance A Handler for the LV2 Plugin Instance.
+ */
 void activate(LV2_Handle instance)
 {
 
@@ -91,6 +116,13 @@ void activate(LV2_Handle instance)
 
 }
 
+/** processes the actual fourier transformation
+ * does a fourier transformation. This part of the program is rather
+ * expensive to compute, so make sure you call this a minimum number of
+ * times.
+ *
+ * @param amp A handler for the LV2 plugin instance.
+ */
 static void fftprocess(Amp * amp)
 {
 
@@ -149,6 +181,11 @@ static void fftprocess(Amp * amp)
 
 }
 
+/** Run the plugin to obtain n_samples of output.
+ *
+ * @param instance A Handler for the LV2 Plugin Instance.
+ * @param n_samples number of samples to operate on.
+ */
 void run(LV2_Handle instance, uint32_t n_samples)
 {
     Amp *amp = (Amp *) instance;
@@ -193,6 +230,10 @@ void run(LV2_Handle instance, uint32_t n_samples)
     } while (io_index < n_samples);
 }
 
+/** Deactivate the plugin (technically, in this case, do nothing)
+ *
+ * @param instance A Handler for the LV2 Plugin Instance.
+ */
 void deactivate( /*@unused@ */ LV2_Handle instance)
 {
 }
@@ -210,12 +251,18 @@ void cleanup(LV2_Handle instance)
 
 }
 
-/*@null@*/ static const void *extension_data( /*@unused@ */ const char
-                                             *uri)
+/** Function with an interesting name that is required but not used
+ *
+ * @param uri a parameter that probably points to something lv2 related
+ */
+/*@null@*/ static const void *extension_data( /*@unused@ */ const char *uri)
 {
     return NULL;
 }
 
+/** A descriptor of this plugin with links to all its (externally
+ * usable) functions. 
+ */
 const LV2_Descriptor descriptor = {
     nidoamp_uri,
     instantiate,
@@ -227,8 +274,12 @@ const LV2_Descriptor descriptor = {
     extension_data
 };
 
-/*@null@*/ LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t
-                                                                  index)
+/** Function outputting the plugin descriptor for a host to use
+ *
+ * @param index Something that should be 0 in this implementation (dont
+ * know real functionality of this)
+ */
+/*@null@*/ LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index)
 {
     switch (index) {
     case 0:
@@ -237,3 +288,5 @@ const LV2_Descriptor descriptor = {
         return NULL;
     }
 }
+
+// vim: ts=4 sw=4 textwidth=72

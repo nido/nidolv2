@@ -25,14 +25,17 @@
 /** Instantiate the plugin.
  *
  * This function initialises the plugin. It includes allocating memory
- * and fftw plans.
+ * and fftw plans and saving them to a datastructure for later
+ * reference.
  *
  * @param descriptor argument of unknown significance
  * @param rate the amount of samples per second thius plusin operates at
  * @param bundle_path argument of unknownn significance
  * @param features argument of unknown significance
+ *
+ * @return an LV2_Handle representation of the datastructure
  */
-void LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
+LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
                             descriptor, /*@unused@ */ double rate,
                             /*@unused@ */ const char *bundle_path,
                             /*@unused@ */

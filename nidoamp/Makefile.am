@@ -1,7 +1,7 @@
 nidoamp_LTLIBRARIES = nidoamp.la
 nidoamp_DATA = nidoamp.ttl manifest.ttl
 check_PROGRAMS = test_nidoamp
-TESTS = $(check_PROGRAMS) cppcheck
+TESTS = $(check_PROGRAMS)
 
 nidoamp_la_SOURCES = nidoamp.c nidoamp.h nidoamp.peg
 nidoamp_la_LDFLAGS = -module -avoid-version -shared
@@ -18,4 +18,4 @@ nidoampdir = @lv2dir@/nidoamp.lv2
 
 include $(top_srcdir)/am_include.mk
 
-CLEANFILES=manifest.ttl
+CLEANFILES=manifest.ttl nidoamp.ttl

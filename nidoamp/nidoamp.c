@@ -32,7 +32,11 @@
  * @param bundle_path argument of unknownn significance
  * @param features argument of unknown significance
  */
-void LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor * descriptor, /*@unused@ */ double rate, /*@unused@ */ const char *bundle_path, /*@unused@ */ const LV2_Feature * const *features)
+void LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
+                            descriptor, /*@unused@ */ double rate,
+                            /*@unused@ */ const char *bundle_path,
+                            /*@unused@ */
+                            const LV2_Feature * const *features)
 {
     Amp *amp = malloc(sizeof(Amp));
 
@@ -255,7 +259,8 @@ void cleanup(LV2_Handle instance)
  *
  * @param uri a parameter that probably points to something lv2 related
  */
-/*@null@*/ static const void *extension_data( /*@unused@ */ const char *uri)
+/*@null@*/ static const void *extension_data( /*@unused@ */ const char
+                                             *uri)
 {
     return NULL;
 }
@@ -279,7 +284,8 @@ const LV2_Descriptor descriptor = {
  * @param index Something that should be 0 in this implementation (dont
  * know real functionality of this)
  */
-/*@null@*/ LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index)
+/*@null@*/ LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t
+                                                                  index)
 {
     switch (index) {
     case 0:

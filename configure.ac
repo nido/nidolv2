@@ -26,7 +26,7 @@ AC_CHECK_LIB([fftw3f], [fftwf_execute],, [AC_MSG_ERROR([fftw3 float version requ
 
 
 AC_ENABLE_SHARED
-LT_INIT([disable-static])
+LT_INIT([disable-static dlopen])
 AC_PROG_LN_S
 
 AC_ARG_ENABLE(maintainer-mode, [AS_HELP_STRING([--enable-maintainer-mode], [build with debugging and no optimization])],

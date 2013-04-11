@@ -1,3 +1,5 @@
+documentation/
+Doxylog
 # autoreconf -si
 Makefile.in
 aclocal.m4

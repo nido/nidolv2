@@ -15,6 +15,6 @@ indent-local:  $(SOURCES)
 	test -z "$(SOURCES)" || indent -kr -nut -ts4 -d0 $^
 
 cppcheck-local:  $(SOURCES)
-	test -z "$(SOURCES)" || cppcheck --error-exitcode=2 $^
+	test -z "$(SOURCES)" || @CPPCHECK@ --error-exitcode=2 $^
 
 .PHONY: indent indent-recurse indent-local

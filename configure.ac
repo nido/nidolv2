@@ -6,7 +6,11 @@ AC_CONFIG_MACRO_DIR([.])
 
 AC_LANG_C
 AC_PROG_CC
+
 AC_PROG_LIBTOOL
+
+AC_CHECK_PROG([CPPCHECK], [cppcheck], [cppcheck], [true])
+
 
 AC_TYPE_UINT32_T
 

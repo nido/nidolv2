@@ -1,8 +1,10 @@
 AC_INIT([nidolv2], [0.0.1])
+# AC_TYPE_UINT32_T and LT_INIT cause problems in 2.59. 2.69 is the
+# lowest version number tested
+AC_PREREQ([2.69])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([gnu dist-bzip2 dist-zip])
 AC_CONFIG_MACRO_DIR([.])
-
 
 AC_LANG_C
 AC_PROG_CC

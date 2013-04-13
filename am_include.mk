@@ -17,4 +17,8 @@ indent-local:  $(SOURCES)
 cppcheck-local:  $(SOURCES)
 	test -z "$(SOURCES)" || @CPPCHECK@ --error-exitcode=2 $^
 
+
+.ttl.peg:
+	lv2peg $< $@
+
 .PHONY: indent indent-recurse indent-local

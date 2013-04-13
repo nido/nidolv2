@@ -13,9 +13,6 @@ BUILT_SOURCES = nidoamp.peg
 
 nidoampdir = @lv2dir@/nidoamp.lv2
 
-.ttl.peg:
-	lv2peg $< $@
-
 include $(top_srcdir)/am_include.mk
 
-CLEANFILES=manifest.ttl nidoamp.ttl
+CLEANFILES=manifest.ttl nidoamp.ttl nidoamp.peg

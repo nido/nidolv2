@@ -28,9 +28,9 @@ typedef struct {
     /** Buffer for the complex component to the fourier transform */
     fftwf_complex *complex_buffer;
     /** Buffer for the complex kernel */
-	fftwf_complex *kernel_buffer;
-	/** Buffer for the convolution kernel */
-	float* convolution_buffer;
+    fftwf_complex *kernel_buffer;
+    /** Buffer for the convolution kernel */
+    float *convolution_buffer;
     /** Buffer from and to which fourier transforms are done */
     float *fourier_buffer;
     /** The location in the internal buffer */

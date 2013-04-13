@@ -119,15 +119,15 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
  *
  * @return the output buffer
  */
-static float* deloop_inputbuffer(Amp* amp, int index)
+static float *deloop_inputbuffer(Amp * amp, int index)
 {
-	float* output = malloc(sizeof(float) * FOURIER_SIZE);
-	int i;
+    float *output = malloc(sizeof(float) * FOURIER_SIZE);
+    int i;
 
-	for (i = 0; i < FOURIER_SIZE; i++){
-		output[i] = amp->in_buffer[(amp->buffer_index + i) % BUFFER_SIZE];
-	}
-	return output;
+    for (i = 0; i < FOURIER_SIZE; i++) {
+        output[i] = amp->in_buffer[(amp->buffer_index + i) % BUFFER_SIZE];
+    }
+    return output;
 }
 
 /** Activates the plugin.
@@ -151,15 +151,15 @@ void activate(LV2_Handle instance)
  * @param buffer the input buffer
  * @param buffer for kernel the kernel to compute
  */
-static void compute_kernel(Amp* amp)
+static void compute_kernel(Amp * amp)
 {
-	int i;
-	fftwf_complex* buffer = amp->complex_buffer;
-	fftwf_complex* kernel = amp->kernel_buffer;
+    int i;
+    fftwf_complex *buffer = amp->complex_buffer;
+    fftwf_complex *kernel = amp->kernel_buffer;
     int hipass = (int) *(amp->hipass);
     int lopass = COMPLEX_SIZE - (int) *(amp->lopass);
-	float normalisation_factor = 0.0;
-	float gate = *(amp->gate);
+    float normalisation_factor = 0.0;
+    float gate = *(amp->gate);
     for (i = 0; i < COMPLEX_SIZE; i++) {
         if ((i < hipass)
             || (i > lopass)
@@ -167,14 +167,14 @@ static void compute_kernel(Amp* amp)
             ) {
             kernel[i] = 0.0;
         } else {
-			kernel[i] = 1.0;
-		}
-		normalisation_factor += kernel[i];
+            kernel[i] = 1.0;
+        }
+        normalisation_factor += kernel[i];
     }
-	// make sure the kernel window size is 1
+    // make sure the kernel window size is 1
     for (i = 0; i < COMPLEX_SIZE; i++) {
-		kernel[i] /= normalisation_factor;
-	}
+        kernel[i] /= normalisation_factor;
+    }
 }
 
 /** Calculates the next step in the output using convolution
@@ -185,14 +185,14 @@ static void compute_kernel(Amp* amp)
  *
  * @return the next output of the convolution
  */
-static float convolve_step(float* input, float* kernel)
+static float convolve_step(float *input, float *kernel)
 {
-	int i;
-	float output = 0;
-	for (i=0; i < FOURIER_SIZE; i++) {
-		output += input[i] * kernel[i];	
-	}
-	return output;
+    int i;
+    float output = 0;
+    for (i = 0; i < FOURIER_SIZE; i++) {
+        output += input[i] * kernel[i];
+    }
+    return output;
 }
 
 /** processes the actual fourier transformation
@@ -214,35 +214,37 @@ static void fftprocess(Amp * amp)
     }
     fftwf_execute(amp->forward);
 
-	compute_kernel(amp);
+    compute_kernel(amp);
 
     fftwf_execute(amp->backward);
     for (i = 0; i < FOURIER_SIZE; i++) {
-		float* inbuf;
-		inbuf = deloop_inputbuffer(amp, (i + amp->buffer_index) % BUFFER_SIZE);
-        amp->out_buffer[(i + amp->buffer_index) % FOURIER_SIZE] += convolve_step(inbuf, amp->fourier_buffer);
+        float *inbuf;
+        inbuf =
+            deloop_inputbuffer(amp, (i + amp->buffer_index) % BUFFER_SIZE);
+        amp->out_buffer[(i + amp->buffer_index) % FOURIER_SIZE] +=
+            convolve_step(inbuf, amp->fourier_buffer);
     }
 
-	/*
-    for (i = 0; i < FOURIER_SIZE; i++) {
-        amp->out_buffer[i] =
-            (float) ((fourier_buffer[i]) / FOURIER_SIZE);
-    }*/
     /*
-    float start;
-    float stop;
-    float slope;
-    float centre;
-    start = amp->in_buffer[0];
-    stop = amp->in_buffer[FOURIER_SIZE - 1];
-    start -= amp->out_buffer[0];
-    stop -= amp->out_buffer[FOURIER_SIZE - 1];
-    slope = (start - stop) / 2;
-    centre = start - slope;
-    // naive smoothing
-        amp->out_buffer[i] +=
-            centre + slope * cosf(i * (M_PI) / FOURIER_SIZE);
-    }*/
+       for (i = 0; i < FOURIER_SIZE; i++) {
+       amp->out_buffer[i] =
+       (float) ((fourier_buffer[i]) / FOURIER_SIZE);
+       } */
+    /*
+       float start;
+       float stop;
+       float slope;
+       float centre;
+       start = amp->in_buffer[0];
+       stop = amp->in_buffer[FOURIER_SIZE - 1];
+       start -= amp->out_buffer[0];
+       stop -= amp->out_buffer[FOURIER_SIZE - 1];
+       slope = (start - stop) / 2;
+       centre = start - slope;
+       // naive smoothing
+       amp->out_buffer[i] +=
+       centre + slope * cosf(i * (M_PI) / FOURIER_SIZE);
+       } */
 }
 
 /** Run the plugin to obtain n_samples of output.
@@ -269,20 +271,18 @@ void run(LV2_Handle instance, uint32_t n_samples)
             (uint32_t) (FOURIER_SIZE - amp->buffer_index);
         readcount = n_samples;
 
-		// make sure to stop at FOURIER_SIZE lengths
+        // make sure to stop at FOURIER_SIZE lengths
         if ((amp->buffer_index % FOURIER_SIZE) + readcount > bufferlength) {
             readcount = bufferlength;
         }
-		// make sure to stop at readbuffer lengths
+        // make sure to stop at readbuffer lengths
         if (io_index + readcount > n_samples) {
             readcount = n_samples - io_index;
         }
-		// read input and write output
+        // read input and write output
         for (i = 0; i < readcount; i++) {
-            in_buffer[amp->buffer_index + i] =
-                input[io_index + i];
-            output[io_index + i] =
-                amp->out_buffer[amp->buffer_index + i];
+            in_buffer[amp->buffer_index + i] = input[io_index + i];
+            output[io_index + i] = amp->out_buffer[amp->buffer_index + i];
         }
 
 

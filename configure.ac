@@ -30,6 +30,7 @@ AC_PROG_CC
 
 #programs 
 AC_CHECK_PROG([CPPCHECK], [cppcheck], [cppcheck], [true])
+AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex], [AC_MSG_WARN([Cannot build pdf documentation])])
 AC_CHECK_PROG([CPPCHECK], [lv2peg], [lv2peg], [AC_MSG_ERROR([Cannot find lv2peg])])
 AC_PROG_LN_S
 AC_PROG_LIBTOOL
@@ -65,6 +66,9 @@ AC_CHECK_LIB([fftw3f], [fftwf_execute],, [AC_MSG_ERROR([fftw3 float version requ
 
 AC_ENABLE_SHARED
 LT_INIT([disable-static dlopen])
+
+#am conditionals
+AM_CONDITIONAL([MAKE_PDF], [text xPDFLATEX != x])
 
 # macro redefinition
 AC_DEFINE_UNQUOTED(FOURIER_SIZE, $with_fouriersize)

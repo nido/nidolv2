@@ -1,7 +1,9 @@
 AUTOMAKE_OPTIONS = foreign dist-bzip2
 
 bin_SCRIPTS = lv2wisdom.sh
+if MAKE_PDF
 pdf_DATA = refman.pdf
+endif
 html_DIRDATA = documentation/html
 
 ACLOCAL_AMFLAGS = -I .

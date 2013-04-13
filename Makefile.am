@@ -17,17 +17,16 @@ refman.pdf: documentation/latex/refman.pdf
 	cp $^ $@
 
 documentation/html: documentation
+	$(MAKE) $(AM_MAKEFLAGS) documentation
 
-html-am: documentation
-#html: documentation/html
-#	cp -r $^ $@
-
+html-am: documentation/html
+pdf-am: refman.pdf
 EXTRA_DIST = README.md
 
 MAINTAINERCLEANFILES=Makefile.in aclocal.m4 nidoamp/Makefile.in config.guess config.sub configure depcomp install-sh ltmain.sh missing libtool.m4  lt~obsolete.m4  ltoptions.m4  ltsugar.m4  ltversion.m4
 
-install_HTML: $(HTML_DIRDATA)
-	$(INSTALL_DATA) $< "$(DESTDIR)$(htmldir)" || exit $$?
+install-html-am: $(html_DIRDATA)
+	test -z "$<" || cp -r $(html_DIRDATA) "$(DESTDIR)$(htmldir)/html"
 
 CLEANFILES=Doxylog refman.pdf
 clean-local:

@@ -12,22 +12,27 @@ typedef struct {
     float *hipass;
     /** the low pass control fader */
     float *lopass;
-    /** input buffer */
-    float *input;
-    /** output buffer */
-    float *output;
     /** output port giving the latency */
     float *latency;
     /** the gate control fader */
     float *gate;
+    /** input buffer as sent by the host */
+    float *input;
+    /** output buffer as sent by the host */
+    float *output;
+
+    /** input buffer, local storage */
+    float *in_buffer;
+    /** output bufferm local storage */
+    float *out_buffer;
     /** Buffer for the complex component to the fourier transform */
     fftwf_complex *complex_buffer;
+    /** Buffer for the complex kernel */
+	fftwf_complex *kernel_buffer;
+	/** Buffer for the convolution kernel */
+	float* convolution_buffer;
     /** Buffer from and to which fourier transforms are done */
-    float *real_buffer;
-    /** input buffer as sent by the host */
-    float *in_buffer;
-    /** output buffer as sent by the host */
-    float *out_buffer;
+    float *fourier_buffer;
     /** The location in the internal buffer */
     int buffer_index;
     /** The plan to do forward DFT's */
@@ -47,5 +52,6 @@ void run(LV2_Handle instance, uint32_t n_samples);
 void deactivate(LV2_Handle instance);
 void cleanup( /*@only@ */ LV2_Handle instance);
 LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index);
+static void compute_kernel(Amp* amp);
 // vim: ts=4 sw=4 textwidth=72
 //

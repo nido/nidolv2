@@ -52,6 +52,5 @@ void run(LV2_Handle instance, uint32_t n_samples);
 void deactivate(LV2_Handle instance);
 void cleanup( /*@only@ */ LV2_Handle instance);
 LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index);
-static void compute_kernel(Amp* amp);
 // vim: ts=4 sw=4 textwidth=72
 //

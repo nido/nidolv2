@@ -49,6 +49,9 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
     amp->complex_buffer =
         fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->complex_buffer != NULL);
+    amp->kernel_buffer =
+        fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
+    assert(amp->kernel_buffer != NULL);
     amp->fourier_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
     assert(amp->fourier_buffer != NULL);
     // todo: malloc when latency is implemented.
@@ -135,13 +138,13 @@ static void compute_kernel(Amp* amp)
 	int iterator;
 	fftwf_complex* buffer = amp->complex_buffer;
 	fftwf_complex* kernel = amp->kernel_buffer;
-	float* lopass = amp->lopass;
-	float* hipass = amp->hipass;
-	float* gate = amp->gate;
+    int hipass = (int) *(amp->hipass);
+    int lopass = COMPLEX_SIZE - (int) *(amp->lopass);
+	float gate = *(amp->gate);
     for (iterator = 0; iterator < COMPLEX_SIZE; iterator++) {
         if ((iterator < hipass)
             || (iterator > lopass)
-            || (powf(cabsf(buffer[iterator]), 2.0) < *(amp->gate))
+            || (powf(cabsf(buffer[iterator]), 2.0) < gate)
             ) {
             kernel[iterator] = 0.0;
         } else {
@@ -162,9 +165,6 @@ static void fftprocess(Amp * amp)
 
     int iterator;
     float *fourier_buffer = amp->fourier_buffer;
-    fftwf_complex *complex_buffer = amp->complex_buffer;
-    int hipass = (int) *(amp->hipass);
-    int lopass = COMPLEX_SIZE - (int) *(amp->lopass);
     float in;
     float out;
     float start;

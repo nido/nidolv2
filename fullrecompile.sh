@@ -2,4 +2,4 @@
 # full cleanup if possible
 test -f Makefile && make maintainer-clean
 
-autoreconf -fsi && ./configure --with-fouriersize=512 --bindir=${HOME}/bin --with-lv2dir=${HOME}/.lv2 && make check
+autoreconf -fsi && ./configure --with-fouriersize=512 --bindir=${HOME}/bin --docdir=${HOME}/Documents --with-lv2dir=${HOME}/.lv2 && make check distcheck

@@ -36,10 +36,10 @@
  * @return an LV2_Handle representation of the datastructure
  */
 LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
-                            descriptor, /*@unused@ */ double rate,
-                            /*@unused@ */ const char *bundle_path,
-                            /*@unused@ */
-                            const LV2_Feature * const *features)
+                       descriptor, /*@unused@ */ double rate,
+                       /*@unused@ */ const char *bundle_path,
+                       /*@unused@ */
+                       const LV2_Feature * const *features)
 {
     Amp *amp = malloc(sizeof(Amp));
 

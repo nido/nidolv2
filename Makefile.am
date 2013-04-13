@@ -1,9 +1,20 @@
 AUTOMAKE_OPTIONS = foreign dist-bzip2
 
 bin_SCRIPTS = lv2wisdom.sh
+
+
+
 if MAKE_PDF
 pdf_DATA = refman.pdf
-endif
+
+documentation/latex/refman.pdf: documentation
+	$(MAKE) -C documentation/latex refman.pdf
+
+refman.pdf: documentation/latex/refman.pdf
+	cp $^ $@
+
+endif #MAKE_PDF
+
 html_DIRDATA = documentation/html
 
 ACLOCAL_AMFLAGS = -I .
@@ -11,12 +22,6 @@ SUBDIRS = nidoamp
 
 documentation: Doxyfile README.md
 	doxygen $<
-
-documentation/latex/refman.pdf: documentation
-	$(MAKE) -C documentation/latex refman.pdf
-
-refman.pdf: documentation/latex/refman.pdf
-	cp $^ $@
 
 documentation/html: documentation
 	$(MAKE) $(AM_MAKEFLAGS) documentation

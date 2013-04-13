@@ -33,6 +33,6 @@ nidoamp/.libs/
 nidoamp/nidoamp.la
 nidoamp/nidoamp.lo
 nidoamp/nidoamp.o
+nidoamp/nidoamp.peg
 nidoamp/test_nidoamp
 nidoamp/test_nidoamp.o
-nidoamp/nidoamp.peg

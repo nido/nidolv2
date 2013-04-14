@@ -5,7 +5,6 @@
 
 #include "ringbuffer.h"
 
-#undef DEBUG
 
 /** Initialise a ringbuffer
  *
@@ -19,7 +18,7 @@ struct ringbuffer *init_buffer(size, latency)
     int i;
     struct ringbuffer *buffer;
     if (size <= latency) {
-#ifdef DEBUG
+#ifdef VERBOSE_DEBUG
         printf("size (%i) needs to be bigger then latency (%i)\n", size,
                latency);
 #endif
@@ -30,7 +29,7 @@ struct ringbuffer *init_buffer(size, latency)
     }
     buffer = malloc(sizeof(struct ringbuffer));
     if (buffer == NULL) {
-#ifdef DEBUG
+#ifdef VERBOSE_DEBUG
         printf("cannot allocate struct\n");
 #endif
         return (struct ringbuffer *) NULL;
@@ -67,7 +66,7 @@ void write_buffer(struct ringbuffer *buffer, const float *input,
                   const int size)
 {
     int i;
-#ifdef DEBUG
+#ifdef VERBOSE_DEBUG
     printf("Writing to %lx, readidx %i, writeidx %i, writesize %i\n",
            (unsigned long int) buffer, buffer->read_index,
            buffer->write_index, size);
@@ -83,7 +82,7 @@ void write_buffer(struct ringbuffer *buffer, const float *input,
 
 void read_buffer(float *output, struct ringbuffer *buffer, const int size)
 {
-#ifdef DEBUG
+#ifdef VERBOSE_DEBUG
     printf("Reading at %lx, readidx %i, writeidx %i, readsize %i\n",
            (unsigned long int) buffer, buffer->read_index,
            buffer->write_index, size);
@@ -121,14 +120,14 @@ void prefetch_buffer(float *output, const struct ringbuffer *buffer,
         i += maxread;
     }
     assert(i == size);
-#ifdef DEBUG
+#ifdef VERBOSE_DEBUG
     printf("Peeking at %lx, readidx %i, writeidx %i, peeksize %i\n",
            (unsigned long int) buffer, readindex, buffer->write_index,
            size);
-
+#endif
+#ifdef DEBUG
     for (i = 0; i < size; i++) {
         assert(((readindex + i) % buffer->size) != buffer->write_index);
-        output[i] = buffer->buffer[(readindex + i) % buffer->size];
     }
 #endif
 }

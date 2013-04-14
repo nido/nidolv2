@@ -62,7 +62,6 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
     assert(amp->out_buffer != NULL);
     amp->buffer_index = 0;
     set_inner_product(&(amp->convolve_func));
-    printf("%lx\n", (unsigned long int) (amp->convolve_func));
     amp->forward =
         fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->fourier_buffer,
                               amp->complex_buffer, FFTW_ESTIMATE);

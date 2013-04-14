@@ -4,7 +4,7 @@ check_PROGRAMS = test_nidoamp
 TESTS = $(check_PROGRAMS)
 
 nidoamp_la_SOURCES = nidoamp.c nidoamp.h nidoamp.peg ringbuffer.c ringbuffer.h
-nidoamp_la_LDFLAGS = -module -avoid-version -shared
+nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 
 test_nidoamp_SOURCES = test_nidoamp.c
 test_nidoamp_LDADD = $(am_nidoamp_la_OBJECTS)

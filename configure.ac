@@ -53,7 +53,8 @@ AC_TYPE_UINT32_T
 #compiler specifics
 AM_CFLAGS="$AM_CFLAGS -Wall"
 if test "$maintainer_mode" = "yes"; then
-AM_CFLAGS="$AM_CFLAGS -Werror -g -O0"
+AM_CFLAGS="$AM_CFLAGS -Werror -g -O0 -pg"
+AM_LDFLAGS="/lib/gcrt1.o"
 fi
 
 #library functions
@@ -91,6 +92,7 @@ AC_SUBST(AM_CFLAGS)
 
 if test "$maintainer_mode" = "yes"; then
 AC_DEFINE(DEBUG)
+AC_CHECK_LIB([c_p], [read],,)
 fi
 AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh Doxyfile])
 AC_OUTPUT

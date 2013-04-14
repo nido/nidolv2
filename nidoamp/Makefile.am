@@ -1,6 +1,6 @@
 nidoamp_LTLIBRARIES = nidoamp.la
 nidoamp_DATA = nidoamp.ttl manifest.ttl
-check_PROGRAMS = test_nidoamp
+check_PROGRAMS = test_nidoamp test_ringbuffer
 TESTS = $(check_PROGRAMS)
 
 nidoamp_la_SOURCES = nidoamp.c nidoamp.h nidoamp.peg ringbuffer.c ringbuffer.h innerproduct.c innerproduct.h cpuid.c cpuid.h
@@ -8,6 +8,7 @@ nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 
 test_nidoamp_SOURCES = test_nidoamp.c
 test_nidoamp_LDADD = $(am_nidoamp_la_OBJECTS)
+test_ringbuffer_SOURCES = test_ringbuffer.c
 
 BUILT_SOURCES = nidoamp.peg
 

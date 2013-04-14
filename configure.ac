@@ -51,9 +51,13 @@ AC_TYPE_UINT32_T
 #structures
 
 #compiler specifics
-AM_CFLAGS="$AM_CFLAGS -Wall"
+# TODO: Check whether that can actually be done
+#AM_CFLAGS="$AM_CFLAGS -Wall -msse4.1 "
+AM_CFLAGS="$AM_CFLAGS -Wall -msse4.1 -fopenmp"
+#AM_CFLAGS="$AM_CFLAGS -Wall" # uncomment for non-optimised code
 if test "$maintainer_mode" = "yes"; then
-AM_CFLAGS="$AM_CFLAGS -Werror -g -O0"
+AM_CFLAGS="$AM_CFLAGS -O0 -g -pg"
+AM_LDFLAGS="/lib/gcrt1.o"
 fi
 
 #library functions
@@ -89,5 +93,9 @@ AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]
 
 AC_SUBST(AM_CFLAGS)
 
+if test "$maintainer_mode" = "yes"; then
+AC_DEFINE(DEBUG)
+AC_CHECK_LIB([c_p], [read],,)
+fi
 AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh Doxyfile])
 AC_OUTPUT

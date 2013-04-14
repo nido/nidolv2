@@ -5,6 +5,7 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix bufsz: <http://lv2plug.in/ns/ext/buf-size/> .
 @prefix ll: <http://ll-plugins.nongnu.org/lv2/namespace#> .
+@prefix pprops: <http://lv2plug.in/ns/ext/port-props/#> .
 
 <http://nidomedia.com/#me>
 	a foaf:Person ;
@@ -50,7 +51,7 @@
 		lv2:name "gate";
 		lv2:default 0.0 ;
 		lv2:minimum 0.0 ;
-		lv2:maximum @FOURIER_SIZE@ ;
+		lv2:maximum 1 ;
 	], [
 		a lv2:AudioPort, lv2:InputPort ;
 		lv2:index 1 ;

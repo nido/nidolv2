@@ -3,11 +3,11 @@ nidoamp_DATA = nidoamp.ttl manifest.ttl
 check_PROGRAMS = test_nidoamp
 TESTS = $(check_PROGRAMS)
 
-nidoamp_la_SOURCES = nidoamp.c nidoamp.h nidoamp.peg
-nidoamp_la_LDFLAGS = -module -avoid-version -shared
+nidoamp_la_SOURCES = nidoamp.c nidoamp.h nidoamp.peg ringbuffer.c ringbuffer.h innerproduct.c innerproduct.h cpuid.c cpuid.h
+nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 
 test_nidoamp_SOURCES = test_nidoamp.c
-test_nidoamp_LDADD = nidoamp.o
+test_nidoamp_LDADD = $(am_nidoamp_la_OBJECTS)
 
 BUILT_SOURCES = nidoamp.peg
 
@@ -15,4 +15,4 @@ nidoampdir = @lv2dir@/nidoamp.lv2
 
 include $(top_srcdir)/am_include.mk
 
-CLEANFILES=manifest.ttl nidoamp.ttl nidoamp.peg
+CLEANFILES=manifest.ttl nidoamp.ttl nidoamp.peg nidoamp/gmon.out

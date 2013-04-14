@@ -12,6 +12,8 @@
 #include "nidoamp.h"
 #include "nidoamp.peg"
 
+#include "innerproduct.h"
+
 #ifndef FOURIER_SIZE
 /** The number of samples to take a fourier transformation of. */
 #define FOURIER_SIZE 512
@@ -21,6 +23,8 @@
 /** The size of the fourier transform output (and input for the inverse). */
 #define COMPLEX_SIZE (FOURIER_SIZE / 2 + 1)
 #endif
+
+#define BUFFER_SIZE (FOURIER_SIZE * 3)
 
 /** Instantiate the plugin.
  *
@@ -47,21 +51,25 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
     amp->complex_buffer =
         fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->complex_buffer != NULL);
-    amp->real_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
-    assert(amp->real_buffer != NULL);
-    // todo: malloc when latency is implemented.
-    amp->in_buffer = fftwf_malloc(sizeof(float) * FOURIER_SIZE);
+    amp->kernel_buffer =
+        fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
+    assert(amp->kernel_buffer != NULL);
+    amp->fourier_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
+    assert(amp->fourier_buffer != NULL);
+    amp->in_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->in_buffer != NULL);
-    amp->out_buffer = fftwf_malloc(sizeof(float) * FOURIER_SIZE);
+    amp->out_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->out_buffer != NULL);
     amp->buffer_index = 0;
+    set_inner_product(&(amp->convolve_func));
+    printf("%lx\n", (unsigned long int) (amp->convolve_func));
     amp->forward =
-        fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->real_buffer,
+        fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->fourier_buffer,
                               amp->complex_buffer, FFTW_ESTIMATE);
     assert(amp->forward != NULL);
     amp->backward =
-        fftwf_plan_dft_c2r_1d(FOURIER_SIZE, amp->complex_buffer,
-                              amp->real_buffer, FFTW_ESTIMATE);
+        fftwf_plan_dft_c2r_1d(FOURIER_SIZE, amp->kernel_buffer,
+                              amp->fourier_buffer, FFTW_ESTIMATE);
     assert(amp->backward != NULL);
 
     return (LV2_Handle) amp;
@@ -118,9 +126,58 @@ void activate(LV2_Handle instance)
 
     Amp *amp = (Amp *) instance;
     // making this zero (float zero's are zero too)
-    bzero(amp->real_buffer, sizeof(float) * FOURIER_SIZE);
-    bzero(amp->real_buffer, sizeof(float) * FOURIER_SIZE);
+    bzero(amp->fourier_buffer, sizeof(float) * FOURIER_SIZE);
+    bzero(amp->fourier_buffer, sizeof(float) * FOURIER_SIZE);
 
+}
+
+/** Computes the frequency kernel based on the input buffer
+ *
+ * @param buffer the input buffer
+ * @param buffer for kernel the kernel to compute
+ */
+void compute_kernel(Amp * amp)
+{
+    int i;
+    fftwf_complex *buffer = amp->complex_buffer;
+    fftwf_complex *kernel = amp->kernel_buffer;
+    int hipass = (int) *(amp->hipass);
+    int lopass = COMPLEX_SIZE - (int) *(amp->lopass);
+    float normalisation_factor = 0.0;
+    float gate = pow(*(amp->gate), 10) * FOURIER_SIZE;
+
+    fftwf_execute(amp->forward);
+    for (i = 0; i < COMPLEX_SIZE; i++) {
+
+        float measure = fabs(crealf(buffer[i]));
+        if ((i < hipass)
+            || (i > lopass)
+            || (measure < gate)
+            ) {
+            kernel[i] = 0.0;
+        } else {
+            kernel[i] = 1.0;
+        }
+        //  normalisation_factor += kernel[i];
+    }
+
+    fftwf_execute(amp->backward);
+
+    // make sure the kernel window size is normalised
+    normalisation_factor = 1.0 / FOURIER_SIZE;
+    // not sure if we should be doing this, but, well
+    /*
+       for (i = 0; i < FOURIER_SIZE; i++) {
+       normalisation_factor += abs(amp->fourier_buffer[i]);
+       }
+       if (normalisation_factor != 0.0) {
+       normalisation_factor = 1 / normalisation_factor;
+       }
+     */
+    for (i = 0; i < FOURIER_SIZE; i++) {
+        amp->fourier_buffer[i] *= normalisation_factor;
+    }
+    //printf("normalisation factor %f\n", normalisation_factor);
 }
 
 /** processes the actual fourier transformation
@@ -130,62 +187,26 @@ void activate(LV2_Handle instance)
  *
  * @param amp A handler for the LV2 plugin instance.
  */
-static void fftprocess(Amp * amp)
+void fftprocess(Amp * amp)
 {
 
-    int iterator;
-    float *real_buffer = amp->real_buffer;
-    fftwf_complex *complex_buffer = amp->complex_buffer;
-    int hipass = (int) *(amp->hipass);
-    int lopass = COMPLEX_SIZE - (int) *(amp->lopass);
-    float in;
-    float out;
-    float start;
-    float stop;
-    float slope;
-    float centre;
+    int i;
+    float *fourier_buffer = amp->fourier_buffer;
+    float output[FOURIER_SIZE];
 
+    peek_buffer(fourier_buffer, amp->in_buffer, FOURIER_SIZE);
+    compute_kernel(amp);
+#pragma omp parallel for default(shared)
+    for (i = 0; i < FOURIER_SIZE; i++) {
+        float inbuf[FOURIER_SIZE];
 
-    for (iterator = 0; iterator < FOURIER_SIZE; iterator++) {
-        real_buffer[iterator] = amp->in_buffer[iterator];
-    }
-    in = amp->in_buffer[0];
-    out = amp->in_buffer[FOURIER_SIZE - 1];
-    start = amp->in_buffer[0];
-    stop = amp->in_buffer[FOURIER_SIZE - 1];
-//      printf("in: %f", amp->in_buffer[FOURIER_SIZE - 1]);
-    fftwf_execute(amp->forward);
+        prefetch_buffer(inbuf, amp->in_buffer, FOURIER_SIZE, i);
 
-    for (iterator = 0; iterator < COMPLEX_SIZE; iterator++) {
-        if ((iterator < hipass)
-            || (iterator > lopass)
-            || (powf(cabsf(complex_buffer[iterator]), 2.0) < *(amp->gate))
-            ) {
-            complex_buffer[iterator] *= 0.0;
-        }
+        output[i] = (amp->convolve_func) (inbuf, amp->fourier_buffer);
     }
 
-    fftwf_execute(amp->backward);
-
-    for (iterator = 0; iterator < FOURIER_SIZE; iterator++) {
-        amp->out_buffer[iterator] =
-            (float) ((real_buffer[iterator]) / FOURIER_SIZE);
-    }
-    start -= amp->out_buffer[0];
-    stop -= amp->out_buffer[FOURIER_SIZE - 1];
-    slope = (start - stop) / 2;
-    centre = start - slope;
-    // naive smoothing
-    for (iterator = 0; iterator < FOURIER_SIZE; iterator++) {
-        amp->out_buffer[iterator] +=
-            centre + slope * cosf(iterator * (M_PI) / FOURIER_SIZE);
-    }
-    in -= amp->out_buffer[0];
-    out -= amp->out_buffer[FOURIER_SIZE - 1];
-
-//      printf(", out: %f\n", amp->out_buffer[FOURIER_SIZE - 1]);
-//      printf("%f, %f, %f, %f\n", in, out, centre, slope);
-
+    write_buffer(amp->out_buffer, output, FOURIER_SIZE);
+    read_buffer(NULL, amp->in_buffer, FOURIER_SIZE);
 }
 
 /** Run the plugin to obtain n_samples of output.
@@ -199,8 +220,6 @@ void run(LV2_Handle instance, uint32_t n_samples)
     const float *const input = amp->input;
     float *const output = amp->output;
     uint32_t io_index = 0;
-    float *in_buffer = amp->in_buffer;
-    float *out_buffer = amp->out_buffer;
     uint32_t readcount;
 
     if (amp->latency != NULL) {
@@ -208,31 +227,38 @@ void run(LV2_Handle instance, uint32_t n_samples)
     }
     do {
 
-        uint32_t iterator;
         uint32_t bufferlength =
-            (uint32_t) (FOURIER_SIZE - amp->buffer_index);
+            (uint32_t) (FOURIER_SIZE - (amp->buffer_index % FOURIER_SIZE));
+        assert(bufferlength <= FOURIER_SIZE);
         readcount = n_samples;
 
-        if (amp->buffer_index + readcount > bufferlength) {
-            readcount = bufferlength;
-        }
+        // make sure to stop at readbuffer lengths
         if (io_index + readcount > n_samples) {
             readcount = n_samples - io_index;
         }
-        for (iterator = 0; iterator < readcount; iterator++) {
-            in_buffer[amp->buffer_index + iterator] =
-                input[io_index + iterator];
-            output[io_index + iterator] =
-                out_buffer[amp->buffer_index + iterator];
+        // make sure to stop at FOURIER_SIZE lengths
+        if ((amp->buffer_index % FOURIER_SIZE) + readcount > bufferlength) {
+            readcount = bufferlength;
         }
 
+        assert(readcount <= FOURIER_SIZE);
+        assert(readcount + (amp->buffer_index % FOURIER_SIZE) <=
+               FOURIER_SIZE);
+        // read input and write output
+        write_buffer(amp->in_buffer, input + io_index, readcount);
+/*        for (i = 0; i < readcount; i++) {
+            in_buffer[(amp->buffer_index + i) % BUFFER_SIZE] = input[io_index + i];
+            output[io_index + i] = amp->out_buffer[amp->buffer_index + i];
+        }*/
 
-        if (amp->buffer_index + readcount == FOURIER_SIZE) {
+        read_buffer(output + io_index, amp->out_buffer, readcount);
+
+        if ((amp->buffer_index + readcount) % FOURIER_SIZE == 0) {
             fftprocess(amp);
         }
 
         amp->buffer_index =
-            (int) (amp->buffer_index + readcount) % FOURIER_SIZE;
+            (int) (amp->buffer_index + readcount) % BUFFER_SIZE;
         io_index += readcount;
     } while (io_index < n_samples);
 }
@@ -249,9 +275,10 @@ void cleanup(LV2_Handle instance)
 {
     Amp *amp = (Amp *) instance;
     fftwf_free(amp->complex_buffer);
-    fftwf_free(amp->real_buffer);
-    fftwf_free(amp->in_buffer);
-    fftwf_free(amp->out_buffer);
+    fftwf_free(amp->fourier_buffer);
+    fftwf_free(amp->kernel_buffer);
+    free_buffer(amp->in_buffer);
+    free_buffer(amp->out_buffer);
     fftwf_destroy_plan(amp->forward);
     fftwf_destroy_plan(amp->backward);
     free(amp);

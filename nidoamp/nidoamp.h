@@ -4,6 +4,8 @@
 #include <complex.h>
 #endif
 #include <fftw3.h>
+#include "ringbuffer.h"
+
 
 /** Datastructure holding the buffers and links to input and output ports.
  */
@@ -12,22 +14,29 @@ typedef struct {
     float *hipass;
     /** the low pass control fader */
     float *lopass;
-    /** input buffer */
-    float *input;
-    /** output buffer */
-    float *output;
     /** output port giving the latency */
     float *latency;
     /** the gate control fader */
     float *gate;
+    /** input buffer as sent by the host */
+    float *input;
+    /** output buffer as sent by the host */
+    float *output;
+
+    /** input buffer, local storage */
+    struct ringbuffer *in_buffer;
+    /** output bufferm local storage */
+    struct ringbuffer *out_buffer;
     /** Buffer for the complex component to the fourier transform */
     fftwf_complex *complex_buffer;
+    /** Buffer for the complex kernel */
+    fftwf_complex *kernel_buffer;
+    /** Buffer for the convolution kernel */
+    float *convolution_buffer;
     /** Buffer from and to which fourier transforms are done */
-    float *real_buffer;
-    /** input buffer as sent by the host */
-    float *in_buffer;
-    /** output buffer as sent by the host */
-    float *out_buffer;
+    float *fourier_buffer;
+    /** buffer for convolution */
+    float (*convolve_func) (float *, float *);
     /** The location in the internal buffer */
     int buffer_index;
     /** The plan to do forward DFT's */

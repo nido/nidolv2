@@ -41,6 +41,14 @@ This requires a buffer of `2 * FOURIER_SIZE` of input to be full in order
 to compute the next point.
 
 
+To compute point X (naive):
+
+	output[x] = convolve(input[x], kernel[x])
+	kernel[x] = computed_kernel[x - x % FOURIER_SIZE]
+	computed_kernel[x] = idft(fourier_matrix[x])
+	fourier_matrix[x] = get_matrix(complex_buffer)
+	complex_buffer = dft(input[x])
+
 Notes
 -----
 

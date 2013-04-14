@@ -54,7 +54,7 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
     assert(amp->kernel_buffer != NULL);
     amp->fourier_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
     assert(amp->fourier_buffer != NULL);
-	amp->in_buffer = init_buffer(BUFFER_SIZE, 0);
+	amp->in_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->in_buffer != NULL);
 	amp->out_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->out_buffer != NULL);
@@ -104,7 +104,7 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
         amp->gate = (float *) data;
         break;
     case nidoamp_n_ports:
-        printf("%s severely broken\n", nidoamp_uri);
+        //printf("%s severely broken\n", nidoamp_uri);
         exit(EXIT_FAILURE);
         break;
     }
@@ -141,6 +141,8 @@ static void compute_kernel(Amp * amp)
     int lopass = COMPLEX_SIZE - (int) *(amp->lopass);
     float normalisation_factor = 0.0;
     float gate = *(amp->gate);
+
+    fftwf_execute(amp->forward);
     for (i = 0; i < COMPLEX_SIZE; i++) {
         if ((i < hipass)
             || (i > lopass)
@@ -149,18 +151,25 @@ static void compute_kernel(Amp * amp)
             kernel[i] = 0.0;
         } else {
             kernel[i] = 1.0;
+			//printf( "Else case\n");
         }
-        normalisation_factor += kernel[i];
+      //  normalisation_factor += kernel[i];
     }
-	if (normalisation_factor != 0.0){
-		normalisation_factor = 1 / COMPLEX_SIZE /
-			normalisation_factor;
-	}
-	for (i = 0; i < COMPLEX_SIZE; i++) {
-		kernel[i] *= normalisation_factor;
-	}
+	//printf("used normalisation factor %f\n", normalisation_factor);
+
     // make sure the kernel window size is 1
     fftwf_execute(amp->backward);
+	for (i = 0; i < FOURIER_SIZE; i++) {
+		normalisation_factor += abs(amp->fourier_buffer[i]);
+	}
+	if (normalisation_factor != 0.0){
+		normalisation_factor = 1 /
+			normalisation_factor;
+	}
+	for (i = 0; i < FOURIER_SIZE; i++) {
+		amp->fourier_buffer[i] *= normalisation_factor;
+	}
+	//printf("normalisation factor %f\n", normalisation_factor);
 }
 
 /** Calculates the next step in the output using convolution
@@ -171,15 +180,16 @@ static void compute_kernel(Amp * amp)
  *
  * @return the next output of the convolution
  */
-/*static float convolve_step(float *input, float *kernel)
+static float convolve_step(float *input, float *kernel)
 {
     int i;
     float output = 0;
     for (i = 0; i < FOURIER_SIZE; i++) {
+		//printf("%f, %f\n", input[i], kernel[i]);
         output += input[i] * kernel[i];
     }
     return output;
-}*/
+}
 
 /** processes the actual fourier transformation
  * does a fourier transformation. This part of the program is rather
@@ -198,23 +208,23 @@ static void fftprocess(Amp * amp)
         fourier_buffer[i] = amp->in_buffer[i];
     }*/
 	peek_buffer(fourier_buffer , amp->in_buffer, FOURIER_SIZE);
-    fftwf_execute(amp->forward);
 
     compute_kernel(amp);
     for (i = 0; i < FOURIER_SIZE; i++) {
 		float output;
 		read_buffer(&output, amp->in_buffer, 1);
-/*
+
     	float *inbuf;
 		inbuf = malloc(sizeof(float) * FOURIER_SIZE);
-//		peek_buffer(inbuf, amp->in_buffer, FOURIER_SIZE);
+		peek_buffer(inbuf, amp->in_buffer, FOURIER_SIZE);
 
-//		peek_buffer(&output, amp->in_buffer, 1);
+		//peek_buffer(&output, amp->in_buffer, 1);
 
-//        output = convolve_step(inbuf, amp->fourier_buffer);
+        output = convolve_step(inbuf, amp->fourier_buffer);
+	//printf("%f\n", output);
         //amp->out_buffer[(i + amp->buffer_index) % FOURIER_SIZE] = output;
         free(inbuf);
-    */
+    
         write_buffer(amp->out_buffer, &output, 1);
 	}
 }

@@ -11,12 +11,13 @@ int main(void)
 {
     float *buffer;
     float hipass;
+    float output;
     LV2_Handle handle;
     int i;
     int j;
 
     j = 0;
-    hipass = 1.0;
+    hipass = 0.0;
     buffer = malloc(sizeof(float) * DATASIZE);
     if (buffer == NULL) {
         printf("%s\n", "Not enough memory");
@@ -28,10 +29,11 @@ int main(void)
 
     handle = instantiate(&descriptor, 96000.0, "Irrelevant", NULL);
     connect_port(handle, 0, &hipass);
-    connect_port(handle, 1, buffer);
-    connect_port(handle, 2, buffer);
     connect_port(handle, 3, &hipass);
     connect_port(handle, 5, &hipass);
+
+    connect_port(handle, 1, buffer);
+    connect_port(handle, 2, buffer);
     connect_port(handle, 4, buffer);
     activate(handle);
     for (i = 0; i < DATASIZE; i += j) {

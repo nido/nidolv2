@@ -35,8 +35,8 @@ typedef struct {
     float *convolution_buffer;
     /** Buffer from and to which fourier transforms are done */
     float *fourier_buffer;
-	/** buffer for convolution */
-	float (*convolve_func)(float*, float*);
+    /** buffer for convolution */
+    float (*convolve_func) (float *, float *);
     /** The location in the internal buffer */
     int buffer_index;
     /** The plan to do forward DFT's */

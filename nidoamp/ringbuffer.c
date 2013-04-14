@@ -14,35 +14,36 @@
  *
  * @return the ringbuffer
  */
-struct ringbuffer* init_buffer(size, latency)
+struct ringbuffer *init_buffer(size, latency)
 {
-	int i;
-	struct ringbuffer* buffer;
-	if(size <= latency) {
+    int i;
+    struct ringbuffer *buffer;
+    if (size <= latency) {
 #ifdef DEBUG
-	printf("size (%i) needs to be bigger then latency (%i)\n", size, latency);
+        printf("size (%i) needs to be bigger then latency (%i)\n", size,
+               latency);
 #endif
-		return (struct ringbuffer*)NULL;
-	}
-	if (latency < 0) {
-		latency = size + latency;
-	}
-	buffer = malloc(sizeof(struct ringbuffer));
-	if(buffer == NULL){
+        return (struct ringbuffer *) NULL;
+    }
+    if (latency < 0) {
+        latency = size + latency;
+    }
+    buffer = malloc(sizeof(struct ringbuffer));
+    if (buffer == NULL) {
 #ifdef DEBUG
-	printf("cannot allocate struct\n");
+        printf("cannot allocate struct\n");
 #endif
-		return (struct ringbuffer*)NULL;
-	}
-	buffer->read_index = 0;
-	buffer->size = size;
-	buffer->buffer = malloc(sizeof(float) * size);
-	assert(buffer->buffer != NULL);
-	for (i=0; i < latency; i++){
-		buffer->buffer[i] = 0.0;
-	}
-	buffer->write_index = latency;
-	return buffer;
+        return (struct ringbuffer *) NULL;
+    }
+    buffer->read_index = 0;
+    buffer->size = size;
+    buffer->buffer = malloc(sizeof(float) * size);
+    assert(buffer->buffer != NULL);
+    for (i = 0; i < latency; i++) {
+        buffer->buffer[i] = 0.0;
+    }
+    buffer->write_index = latency;
+    return buffer;
 }
 
 /** frees the ringbuffer
@@ -50,10 +51,10 @@ struct ringbuffer* init_buffer(size, latency)
  * @param buffer the buffer to free
  *
  */
-void free_buffer(struct ringbuffer* buffer)
+void free_buffer(struct ringbuffer *buffer)
 {
-	free(buffer->buffer);
-	free(buffer);
+    free(buffer->buffer);
+    free(buffer);
 }
 
 /** write size data to the ringbuffer from input
@@ -62,51 +63,72 @@ void free_buffer(struct ringbuffer* buffer)
  * @param input the input to read from
  * @param size the amount of items to read
  */
-void write_buffer(struct ringbuffer* buffer, const float* input, const int size)
+void write_buffer(struct ringbuffer *buffer, const float *input,
+                  const int size)
 {
-	int i;
+    int i;
 #ifdef DEBUG
-	printf("Writing to %lx, readidx %i, writeidx %i, writesize %i\n", (unsigned long int) buffer, buffer->read_index, buffer->write_index, size);
+    printf("Writing to %lx, readidx %i, writeidx %i, writesize %i\n",
+           (unsigned long int) buffer, buffer->read_index,
+           buffer->write_index, size);
 #endif
-	for (i=0; i<size; i++) {
-		assert(((buffer->write_index + i + 1) % buffer->size) != buffer->read_index);
-		buffer->buffer[(buffer->write_index + i) % buffer->size] = input[i];
-	}
-	buffer->write_index = (buffer->write_index + size) % buffer->size;
+    for (i = 0; i < size; i++) {
+        assert(((buffer->write_index + i + 1) % buffer->size) !=
+               buffer->read_index);
+        buffer->buffer[(buffer->write_index + i) % buffer->size] =
+            input[i];
+    }
+    buffer->write_index = (buffer->write_index + size) % buffer->size;
 }
 
-void read_buffer(float* output, struct ringbuffer* buffer, const int size)
+void read_buffer(float *output, struct ringbuffer *buffer, const int size)
 {
 #ifdef DEBUG
-	printf("Reading at %lx, readidx %i, writeidx %i, readsize %i\n", (unsigned long int) buffer, buffer->read_index, buffer->write_index, size);
+    printf("Reading at %lx, readidx %i, writeidx %i, readsize %i\n",
+           (unsigned long int) buffer, buffer->read_index,
+           buffer->write_index, size);
 #endif
-	peek_buffer(output, buffer, size);
-	buffer->read_index = (buffer->read_index + size) % buffer->size;
+    if (output != NULL) {
+        peek_buffer(output, buffer, size);
+    }
+    buffer->read_index = (buffer->read_index + size) % buffer->size;
 }
 
-void peek_buffer(float* output, const struct ringbuffer* buffer, const int size)
+void peek_buffer(float *output, const struct ringbuffer *buffer,
+                 const int size)
 {
-	int i;
+    prefetch_buffer(output, buffer, size, 0);
+}
 
-	i=0;
-	while (i < size){
-		int index;
-		int maxread;
-		maxread = buffer->size - buffer->read_index;
-		if (maxread > size - i) {
-			maxread = size - i;
-		}
-		index = (buffer->read_index + i) % buffer->size;
-		memcpy(output + i, buffer->buffer + index, maxread * sizeof(float));
-		i+= maxread;
-	}
-	assert(i==size);
+void prefetch_buffer(float *output, const struct ringbuffer *buffer,
+                     const int size, const int prefetch_count)
+{
+    int i;
+    int readindex;
+    i = 0;
+    readindex = (buffer->read_index + prefetch_count) % buffer->size;
+
+    while (i < size) {
+        int index;
+        int maxread;
+        maxread = buffer->size - readindex;
+        if (maxread > size - i) {
+            maxread = size - i;
+        }
+        index = (readindex + i) % buffer->size;
+        memcpy(output + i, buffer->buffer + index,
+               maxread * sizeof(float));
+        i += maxread;
+    }
+    assert(i == size);
 #ifdef DEBUG
-	printf("Peeking at %lx, readidx %i, writeidx %i, peeksize %i\n", (unsigned long int) buffer, buffer->read_index, buffer->write_index, size);
+    printf("Peeking at %lx, readidx %i, writeidx %i, peeksize %i\n",
+           (unsigned long int) buffer, readindex, buffer->write_index,
+           size);
 
-	for (i=0; i<size; i++) {
-		assert(((buffer->read_index + i) % buffer->size) != buffer->write_index);
-		output[i] = buffer->buffer[(buffer->read_index + i) % buffer->size];
-	}
+    for (i = 0; i < size; i++) {
+        assert(((readindex + i) % buffer->size) != buffer->write_index);
+        output[i] = buffer->buffer[(readindex + i) % buffer->size];
+    }
 #endif
 }

@@ -35,7 +35,7 @@ int main(void)
     connect_port(handle, 4, buffer);
     activate(handle);
     for (i = 0; i < DATASIZE; i += j) {
-        j = rand();
+        j = rand() % DATASIZE;
         if (i + j > DATASIZE) {
             j = DATASIZE - i;
         }

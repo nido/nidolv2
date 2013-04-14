@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "ringbuffer.h"
 
@@ -86,11 +87,26 @@ void read_buffer(float* output, struct ringbuffer* buffer, const int size)
 void peek_buffer(float* output, const struct ringbuffer* buffer, const int size)
 {
 	int i;
+
+	i=0;
+	while (i < size){
+		int index;
+		int maxread;
+		maxread = buffer->size - buffer->read_index;
+		if (maxread > size - i) {
+			maxread = size - i;
+		}
+		index = (buffer->read_index + i) % buffer->size;
+		memcpy(output + i, buffer->buffer + index, maxread * sizeof(float));
+		i+= maxread;
+	}
+	assert(i==size);
 #ifdef DEBUG
 	printf("Peeking at %lx, readidx %i, writeidx %i, peeksize %i\n", (unsigned long int) buffer, buffer->read_index, buffer->write_index, size);
-#endif
+
 	for (i=0; i<size; i++) {
 		assert(((buffer->read_index + i) % buffer->size) != buffer->write_index);
 		output[i] = buffer->buffer[(buffer->read_index + i) % buffer->size];
 	}
+#endif
 }

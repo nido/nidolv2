@@ -4,7 +4,7 @@
 #include <lv2.h>
 #include "nidoamp.h"
 
-#define DATASIZE 1048576
+#define DATASIZE 10485760
 
 /** Test program to run like a host to see if it actually operates and have full debug capabilities */
 int main(void)
@@ -23,7 +23,7 @@ int main(void)
         exit(EXIT_FAILURE);
     }
     for (i = 0; i < DATASIZE; i++) {
-        buffer[i] = (float) rand() / RAND_MAX * 2 - 1;
+        buffer[i] = (float) rand() / RAND_MAX - 1;
     }
 
     handle = instantiate(&descriptor, 96000.0, "Irrelevant", NULL);

@@ -8,9 +8,16 @@
 #include <strings.h>
 #include <stdbool.h>
 #include <lv2.h>
+#include <xmmintrin.h>
+#include <smmintrin.h>
 
 #include "nidoamp.h"
 #include "nidoamp.peg"
+
+#define SSE_MASK_RESULT_FIRST 0xF1
+#define SSE_MASK_RESULT_SECOND 0xF2
+#define SSE_MASK_RESULT_THIRD 0xF4
+#define SSE_MASK_RESULT_FOURTH 0xF8
 
 #ifndef FOURIER_SIZE
 /** The number of samples to take a fourier transformation of. */
@@ -59,6 +66,7 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
 	amp->out_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->out_buffer != NULL);
     amp->buffer_index = 0;
+	amp->convolve_temp = malloc(sizeof(float) * FOURIER_SIZE);
     amp->forward =
         fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->fourier_buffer,
                               amp->complex_buffer, FFTW_ESTIMATE);
@@ -132,7 +140,7 @@ void activate(LV2_Handle instance)
  * @param buffer the input buffer
  * @param buffer for kernel the kernel to compute
  */
-static void compute_kernel(Amp * amp)
+void compute_kernel(Amp * amp)
 {
     int i;
     fftwf_complex *buffer = amp->complex_buffer;
@@ -141,9 +149,16 @@ static void compute_kernel(Amp * amp)
     int lopass = COMPLEX_SIZE - (int) *(amp->lopass);
     float normalisation_factor = 0.0;
     float gate = *(amp->gate);
+	static float measure = 0.0;
 
     fftwf_execute(amp->forward);
     for (i = 0; i < COMPLEX_SIZE; i++) {
+
+		if (cabs(buffer[i]) > measure){
+			printf("%f\n", cabs(buffer[i]));
+			measure =  cabs(buffer[i]);
+		}
+
         if ((i < hipass)
             || (i > lopass)
             || (powf(cabsf(buffer[i]), 2.0) < gate)
@@ -172,6 +187,39 @@ static void compute_kernel(Amp * amp)
 	//printf("normalisation factor %f\n", normalisation_factor);
 }
 
+
+
+float inner_product_sse(float *input, float* kernel)
+{
+	float output = 0;
+	__m128 inputvector;
+	__m128 kernelvector;
+	__m128 ssetemp;
+	int i;
+    for (i = 0; i < FOURIER_SIZE / 4; i ++) {
+		inputvector = _mm_load_ps(input + i * 4);
+		kernelvector = _mm_load_ps(kernel + i * 4);
+		ssetemp = _mm_dp_ps(inputvector, kernelvector, SSE_MASK_RESULT_FIRST);
+		output += _mm_cvtss_f32(ssetemp);
+    }
+	// do the parts not done in sse
+    for (i *= 4; i < FOURIER_SIZE; i ++) {
+        	output += input[i] * kernel[i];
+	}
+	return output;
+}
+
+float inner_product(float *input, float *kernel)
+{
+
+    int i;
+    float output = 0;
+    for (i = 0; i < FOURIER_SIZE; i++) {
+        output += input[i] * kernel[i];
+    }
+    return output;
+}
+
 /** Calculates the next step in the output using convolution
  *
  * @param input the input buffer (needs to be of at least length
@@ -180,16 +228,13 @@ static void compute_kernel(Amp * amp)
  *
  * @return the next output of the convolution
  */
-static float convolve_step(float *input, float *kernel)
+float convolve_step(float *input, float *kernel, float* temp)
 {
-    int i;
-    float output = 0;
-    for (i = 0; i < FOURIER_SIZE; i++) {
-		//printf("%f, %f\n", input[i], kernel[i]);
-        output += input[i] * kernel[i];
-    }
-    return output;
+	float output = 0;
+	output = inner_product_sse(input, kernel);
+	return output;
 }
+
 
 /** processes the actual fourier transformation
  * does a fourier transformation. This part of the program is rather
@@ -198,7 +243,7 @@ static float convolve_step(float *input, float *kernel)
  *
  * @param amp A handler for the LV2 plugin instance.
  */
-static void fftprocess(Amp * amp)
+void fftprocess(Amp * amp)
 {
 
     int i;
@@ -218,9 +263,7 @@ static void fftprocess(Amp * amp)
 		inbuf = malloc(sizeof(float) * FOURIER_SIZE);
 		peek_buffer(inbuf, amp->in_buffer, FOURIER_SIZE);
 
-		//peek_buffer(&output, amp->in_buffer, 1);
-
-        output = convolve_step(inbuf, amp->fourier_buffer);
+        output = convolve_step(inbuf, amp->fourier_buffer, amp->convolve_temp);
 	//printf("%f\n", output);
         //amp->out_buffer[(i + amp->buffer_index) % FOURIER_SIZE] = output;
         free(inbuf);

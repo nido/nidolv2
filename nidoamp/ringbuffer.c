@@ -4,6 +4,8 @@
 
 #include "ringbuffer.h"
 
+#undef DEBUG
+
 /** Initialise a ringbuffer
  *
  * @param size the size of the buffer
@@ -24,7 +26,6 @@ struct ringbuffer* init_buffer(size, latency)
 	if (latency < 0) {
 		latency = size + latency;
 	}
-	printf("%i\n", latency);
 	buffer = malloc(sizeof(struct ringbuffer));
 	if(buffer == NULL){
 #ifdef DEBUG
@@ -63,6 +64,9 @@ void free_buffer(struct ringbuffer* buffer)
 void write_buffer(struct ringbuffer* buffer, const float* input, const int size)
 {
 	int i;
+#ifdef DEBUG
+	printf("Writing to %lx, readidx %i, writeidx %i, writesize %i\n", (unsigned long int) buffer, buffer->read_index, buffer->write_index, size);
+#endif
 	for (i=0; i<size; i++) {
 		assert(((buffer->write_index + i + 1) % buffer->size) != buffer->read_index);
 		buffer->buffer[(buffer->write_index + i) % buffer->size] = input[i];
@@ -72,6 +76,9 @@ void write_buffer(struct ringbuffer* buffer, const float* input, const int size)
 
 void read_buffer(float* output, struct ringbuffer* buffer, const int size)
 {
+#ifdef DEBUG
+	printf("Reading at %lx, readidx %i, writeidx %i, readsize %i\n", (unsigned long int) buffer, buffer->read_index, buffer->write_index, size);
+#endif
 	peek_buffer(output, buffer, size);
 	buffer->read_index = (buffer->read_index + size) % buffer->size;
 }
@@ -79,6 +86,9 @@ void read_buffer(float* output, struct ringbuffer* buffer, const int size)
 void peek_buffer(float* output, const struct ringbuffer* buffer, const int size)
 {
 	int i;
+#ifdef DEBUG
+	printf("Peeking at %lx, readidx %i, writeidx %i, peeksize %i\n", (unsigned long int) buffer, buffer->read_index, buffer->write_index, size);
+#endif
 	for (i=0; i<size; i++) {
 		assert(((buffer->read_index + i) % buffer->size) != buffer->write_index);
 		output[i] = buffer->buffer[(buffer->read_index + i) % buffer->size];

@@ -54,12 +54,9 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
     assert(amp->kernel_buffer != NULL);
     amp->fourier_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
     assert(amp->fourier_buffer != NULL);
-    // todo: malloc when latency is implemented.
-//    amp->in_buffer = fftwf_malloc(sizeof(float) * BUFFER_SIZE);
-	amp->in_buffer = init_buffer(BUFFER_SIZE, -1);
+	amp->in_buffer = init_buffer(BUFFER_SIZE, 0);
     assert(amp->in_buffer != NULL);
-//    amp->out_buffer = fftwf_malloc(sizeof(float) * BUFFER_SIZE);
-	amp->out_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE * 2);
+	amp->out_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->out_buffer != NULL);
     amp->buffer_index = 0;
     amp->forward =
@@ -256,6 +253,7 @@ void run(LV2_Handle instance, uint32_t n_samples)
         }
 
 		assert(readcount <= FOURIER_SIZE);
+		assert(readcount + (amp->buffer_index % FOURIER_SIZE) <= FOURIER_SIZE);
         // read input and write output
         write_buffer(amp->in_buffer, input + io_index, readcount);
 /*        for (i = 0; i < readcount; i++) {
@@ -263,12 +261,11 @@ void run(LV2_Handle instance, uint32_t n_samples)
             output[io_index + i] = amp->out_buffer[amp->buffer_index + i];
         }*/
 
-
-        if (amp->buffer_index + readcount == FOURIER_SIZE) {
-            fftprocess(amp);
-        }
-
 		read_buffer(output + io_index, amp->out_buffer, readcount);
+
+        if ((amp->buffer_index + readcount) % FOURIER_SIZE == 0) {
+            fftprocess(amp);
+		}
 
         amp->buffer_index =
             (int) (amp->buffer_index + readcount) % BUFFER_SIZE;
@@ -290,8 +287,6 @@ void cleanup(LV2_Handle instance)
     fftwf_free(amp->complex_buffer);
     fftwf_free(amp->fourier_buffer);
     fftwf_free(amp->kernel_buffer);
-//    fftwf_free(amp->in_buffer);
-//    fftwf_free(amp->out_buffer);
 	free_buffer(amp->in_buffer);
 	free_buffer(amp->out_buffer);
     fftwf_destroy_plan(amp->forward);

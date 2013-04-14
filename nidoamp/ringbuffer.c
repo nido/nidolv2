@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "ringbuffer.h"
 
@@ -21,8 +22,9 @@ struct ringbuffer* init_buffer(size, latency)
 		return (struct ringbuffer*)NULL;
 	}
 	if (latency < 0) {
-		latency = size - latency;
+		latency = size + latency;
 	}
+	printf("%i\n", latency);
 	buffer = malloc(sizeof(struct ringbuffer));
 	if(buffer == NULL){
 #ifdef DEBUG
@@ -30,15 +32,14 @@ struct ringbuffer* init_buffer(size, latency)
 #endif
 		return (struct ringbuffer*)NULL;
 	}
-	buffer->write_index = latency;
 	buffer->read_index = 0;
-	buffer->write_index = 0;
 	buffer->size = size;
 	buffer->buffer = malloc(sizeof(float) * size);
 	assert(buffer->buffer != NULL);
 	for (i=0; i < latency; i++){
 		buffer->buffer[i] = 0.0;
 	}
+	buffer->write_index = latency;
 	return buffer;
 }
 

@@ -174,7 +174,7 @@ static void compute_kernel(Amp * amp)
  *
  * @return the next output of the convolution
  */
-static float convolve_step(float *input, float *kernel)
+/*static float convolve_step(float *input, float *kernel)
 {
     int i;
     float output = 0;
@@ -182,7 +182,7 @@ static float convolve_step(float *input, float *kernel)
         output += input[i] * kernel[i];
     }
     return output;
-}
+}*/
 
 /** processes the actual fourier transformation
  * does a fourier transformation. This part of the program is rather

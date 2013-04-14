@@ -1,6 +1,8 @@
 documentation/
 Doxylog
 *~
+*.o
+*.lo
 # autoreconf -si
 Makefile.in
 aclocal.m4
@@ -36,3 +38,4 @@ nidoamp/nidoamp.o
 nidoamp/nidoamp.peg
 nidoamp/test_nidoamp
 nidoamp/test_nidoamp.o
+refman.pdf

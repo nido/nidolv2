@@ -3,7 +3,7 @@ nidoamp_DATA = nidoamp.ttl manifest.ttl
 check_PROGRAMS = test_nidoamp
 TESTS = $(check_PROGRAMS)
 
-nidoamp_la_SOURCES = nidoamp.c nidoamp.h nidoamp.peg ringbuffer.c ringbuffer.h
+nidoamp_la_SOURCES = nidoamp.c nidoamp.h nidoamp.peg ringbuffer.c ringbuffer.h innerproduct.c innerproduct.h cpuid.c cpuid.h
 nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 
 test_nidoamp_SOURCES = test_nidoamp.c

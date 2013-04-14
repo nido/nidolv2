@@ -51,9 +51,12 @@ AC_TYPE_UINT32_T
 #structures
 
 #compiler specifics
-AM_CFLAGS="$AM_CFLAGS -Wall"
+# TODO: Check whether that can actually be done
+#AM_CFLAGS="$AM_CFLAGS -Wall -msse4.1 "
+AM_CFLAGS="$AM_CFLAGS -Wall -msse4.1 -fopenmp"
+#AM_CFLAGS="$AM_CFLAGS -Wall" # uncomment for non-optimised code
 if test "$maintainer_mode" = "yes"; then
-AM_CFLAGS="$AM_CFLAGS -Werror -g -O0 -pg"
+AM_CFLAGS="$AM_CFLAGS -O0 -g -pg"
 AM_LDFLAGS="/lib/gcrt1.o"
 fi
 

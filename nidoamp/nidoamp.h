@@ -4,6 +4,8 @@
 #include <complex.h>
 #endif
 #include <fftw3.h>
+#include "ringbuffer.h"
+
 
 /** Datastructure holding the buffers and links to input and output ports.
  */
@@ -22,9 +24,9 @@ typedef struct {
     float *output;
 
     /** input buffer, local storage */
-    float *in_buffer;
+    struct ringbuffer *in_buffer;
     /** output bufferm local storage */
-    float *out_buffer;
+    struct ringbuffer *out_buffer;
     /** Buffer for the complex component to the fourier transform */
     fftwf_complex *complex_buffer;
     /** Buffer for the complex kernel */

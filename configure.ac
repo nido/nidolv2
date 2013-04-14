@@ -89,5 +89,8 @@ AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]
 
 AC_SUBST(AM_CFLAGS)
 
+if test "$maintainer_mode" = "yes"; then
+AC_DEFINE(DEBUG)
+fi
 AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh Doxyfile])
 AC_OUTPUT

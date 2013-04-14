@@ -15,4 +15,4 @@ nidoampdir = @lv2dir@/nidoamp.lv2
 
 include $(top_srcdir)/am_include.mk
 
-CLEANFILES=manifest.ttl nidoamp.ttl nidoamp.peg
+CLEANFILES=manifest.ttl nidoamp.ttl nidoamp.peg nidoamp/gmon.out

@@ -9,9 +9,14 @@
 #include <smmintrin.h>
 #endif                          //__SSE4_1__
 #include <stdio.h>
+#include <sys/time.h>
+#include <math.h>
 
 #include "cpuid.h"
+
 #define SSE_MASK_RESULT_FIRST 0xF1
+
+#define USEC_IN_SEC 0.000001
 
 // add one __m128 (val) together
 // _m_hadd_ps(_m_hadd_ps(val, val), irrelevant_val)
@@ -68,16 +73,51 @@ float inner_product(float *input, float *kernel)
     return output;
 }
 
+float measure_function(float (*function_name) (float *, float *))
+{
+	struct timeval start;
+	struct timeval end;
+	float result;
+	float input[FOURIER_SIZE];
+	float kernel[FOURIER_SIZE];
+	int i;
+	float check = 0.0;
+
+	for (i=0; i < FOURIER_SIZE; i++){
+		input[i]= i%2 - 0.5;
+		kernel[i] = i%2 - 0.5;
+	}
+	gettimeofday(&start, NULL);
+	for (i=0; i < FOURIER_SIZE * 32 * 8; i++){
+		check += function_name(input, kernel);
+	}
+	gettimeofday(&end, NULL);
+	result = end.tv_sec - start.tv_sec + (end.tv_usec - start.tv_usec) * USEC_IN_SEC;
+	if (input[FOURIER_SIZE - 1] != check){
+		printf("answer: %f\n", input[FOURIER_SIZE - 1]);
+	}
+#ifdef DEBUG
+	printf("measured %f\n", result);
+#endif
+	return result;
+}
+
 /** return the fastest inner product function for this system
  */
 void set_inner_product(float (**function_name) (float *, float *))
 {
-    // TODO: measure performance and choose the best
-    *function_name = inner_product;
+	float fastest=INFINITY;
+	float measure;
+
+    measure = measure_function(inner_product);
+	if (measure < fastest){
+		*function_name = inner_product;
+	}
 #ifdef __SSE4_1__
-    if (has_sse41()) {
+    measure = measure_function(inner_product);
+	if (measure < fastest){
         *function_name = inner_product_sse41;
-    }
+	}
 #endif                          //__SSE4_1__
 }
 

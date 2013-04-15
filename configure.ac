@@ -13,15 +13,19 @@ AC_ARG_ENABLE(maintainer-mode,
 		[build with debugging and no optimization])
 	],[maintainer_mode=yes],[maintainer_mode=no])
 
-AC_ARG_ENABLE(openmp, [AS_HELP_STRING([--enable-openmp]
-		[build with OpenMP Multiprocessor support])
-	], [openmp=yes], [openmp=no])
+AC_ARG_ENABLE(sse41,
+	[AS_HELP_STRING([--enable-sse41] [Build with SSE 4.1 support])
+	 AS_HELP_STRING([--disable-sse41] [Build Without SSE 4.1 support]) ],
+	[sse41=$enableval],
+	[])
 
-#AC_ARG_ENABLE (feature, help-string, [action-if-given], [action-if-not-given])
+# mayby something with AX_EXT for "all i can do"
 
-AC_ARG_ENABLE(sse41, [AS_HELP_STRING([--enable-sse41]
-		[Build with SSE 4.1 support]) AS_HELP_STRING([--disable-sse41] [Build Without SSE 4.1 support])
-	], [ax_cv_have_sse41_ext=$enableval;sse41require=yes], [])
+AC_ARG_ENABLE(openmp,
+	[AS_HELP_STRING([--enable-openmp]
+		[build with OpenMP Multiprocessor support])],
+	[openmp=yes],
+	[openmp=no])
 
 
 
@@ -69,24 +73,29 @@ AC_TYPE_UINT32_T
 #structures
 
 #compiler specifics
-AX_EXT
 
-if test "$sse41require" = "yes" -a "$ax_cv_check_cflags___msse4_2" = "no"; then
-	AC_MSG_ERROR([SSE 4.1 support requested but not suported by compiler])
-fi
-AM_CFLAGS="$AM_CFLAGS -Wall $SIMD_FLAGS"
-
-if test "$openmp" = "yes"; then
-AX_CHECK_COMPILE_FLAG([-fopenmp], [AM_CFLAGS="$AM_CFLAGS -fopenmp"],
-	[AC_ERROR([Compiler doesn't understand -fopenmp and --enable-openmp is defined])]
-)
-AC_DEFINE(__OPENMP__)
-fi
+AM_CFLAGS="$AM_CFLAGS -Wall"
 
 if test "$maintainer_mode" = "yes"; then
 AM_CFLAGS="$AM_CFLAGS -O0 -g -pg"
 AM_LDFLAGS="$AM_LIBFLAGS /lib/gcrt1.o"
 fi
+
+if test "$sse41" = "yes"; then
+	AX_CHECK_COMPILE_FLAG(-msse4.1,
+		[AM_CFLAGS="$AM_CFLAGS -msse4.1"],
+		[AC_MSG_ERROR([SSE 4.1 support requested but not suported by compiler]) ]
+	)
+fi
+
+if test "$openmp" = "yes"; then
+	AX_CHECK_COMPILE_FLAG([-fopenmp],
+		[AM_CFLAGS="$AM_CFLAGS -fopenmp"],
+		[AC_ERROR([Compiler does not understand -fopenmp and --enable-openmp is defined])]
+	)
+AC_DEFINE(__OPENMP__)
+fi
+
 
 #library functions
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
@@ -99,13 +108,12 @@ AC_CHECK_LIB([fftw3f], [fftwf_execute],, [AC_MSG_ERROR([fftw3 float version requ
 AC_ENABLE_SHARED
 LT_INIT([disable-static dlopen])
 
-#am conditionals
-AM_CONDITIONAL([MAKE_PDF], [test x$PDFLATEX != x])
 
 # information
-if test -n $PDFLATEX; then
+if test -z "$PDFLATEX"; then
 AC_MSG_WARN([Cannot build pdf documentation])
 fi
+AM_CONDITIONAL([MAKE_PDF], [test x$PDFLATEX != x])
 
 # macro redefinition
 AC_DEFINE_UNQUOTED(FOURIER_SIZE, $with_fouriersize)

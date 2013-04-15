@@ -1,3 +1,5 @@
+/** Implementation of a Ringbuffer for use in NidoLV2
+ */
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>

@@ -24,6 +24,10 @@
 #define COMPLEX_SIZE (FOURIER_SIZE / 2 + 1)
 #endif
 
+#ifdef __OPENMP__
+#include <omp.h>
+#endif
+
 #define BUFFER_SIZE (FOURIER_SIZE * 3)
 
 /** Instantiate the plugin.
@@ -70,7 +74,9 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
         fftwf_plan_dft_c2r_1d(FOURIER_SIZE, amp->kernel_buffer,
                               amp->fourier_buffer, FFTW_ESTIMATE);
     assert(amp->backward != NULL);
-
+#ifdef __OPENMP__
+	omp_set_num_threads(omp_get_num_procs());
+#endif
     return (LV2_Handle) amp;
 }
 
@@ -195,7 +201,9 @@ void fftprocess(Amp * amp)
 
     peek_buffer(fourier_buffer, amp->in_buffer, FOURIER_SIZE);
     compute_kernel(amp);
+#ifdef __OPENMP__
 #pragma omp parallel for default(shared)
+#endif
     for (i = 0; i < FOURIER_SIZE; i++) {
         float inbuf[FOURIER_SIZE];
 

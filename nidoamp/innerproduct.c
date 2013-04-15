@@ -4,9 +4,6 @@
  *
  */
 
-#ifndef __SSE4_1__
-#error Fuck you, need sse41
-#endif
 #ifdef __SSE4_1__
 #include <xmmintrin.h>
 #include <smmintrin.h>
@@ -16,6 +13,8 @@
 #include "cpuid.h"
 #define SSE_MASK_RESULT_FIRST 0xF1
 
+// add one __m128 (val) together
+// _m_hadd_ps(_m_hadd_ps(val, val), irrelevant_val)
 
 #ifdef __SSE4_1__
 /** Calculates the next step in the output using convolution using

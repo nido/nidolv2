@@ -1,6 +1,6 @@
 # AC_TYPE_UINT32_T and LT_INIT cause problems in 2.59. 2.69 is the
 # lowest version number tested
-AC_PREREQ([2.69])
+#AC_PREREQ([2.69])
 AC_INIT([nidolv2], [0.0.1])
 
 AC_CANONICAL_SYSTEM
@@ -9,13 +9,26 @@ AC_CONFIG_MACRO_DIR([.])
 
 # Options
 AC_ARG_ENABLE(maintainer-mode,
-	[AS_HELP_STRING([--enable-maintainer-mode],
+	[AS_HELP_STRING([  --enable-maintainer-mode],
 		[build with debugging and no optimization])
 	],[maintainer_mode=yes],[maintainer_mode=no])
+
+AC_ARG_ENABLE(openmp, [AS_HELP_STRING([  --enable-openmp]
+		[build with OpenMP Multiprocessor support])
+	], [openmp=yes], [openmp=no])
+
+#AC_ARG_ENABLE (feature, help-string, [action-if-given], [action-if-not-given])
+
+AC_ARG_ENABLE(sse41, [AS_HELP_STRING([  --enable-sse41]
+		[build with SSE 4.1 support])
+	], [ax_cv_have_sse41_ext=$enableval], [])
+
+
 
 AC_ARG_WITH(fouriersize,
 	[--with-fouriersize=SIZE  Fourier Transform input size (default=512)],
 	[],[with_fouriersize=512])
+
 
 AC_ARG_WITH([lv2dir],
 	[--with-lv2dir=DIR  Use DIR as the lv2 plugin directory [[LIBDIR/lv2]]],
@@ -51,13 +64,19 @@ AC_TYPE_UINT32_T
 #structures
 
 #compiler specifics
-# TODO: Check whether that can actually be done
-#AM_CFLAGS="$AM_CFLAGS -Wall -msse4.1 "
-AM_CFLAGS="$AM_CFLAGS -Wall -msse4.1 -fopenmp"
-#AM_CFLAGS="$AM_CFLAGS -Wall" # uncomment for non-optimised code
+AX_EXT
+AM_CFLAGS="$AM_CFLAGS -Wall $SIMD_FLAGS"
+
+if test "$openmp" = "yes"; then
+AX_CHECK_COMPILE_FLAG([-fopenmp], [AM_CFLAGS="$AM_CFLAGS -fopenmp"],
+	[AC_ERROR([Compiler doesn't understand -fopenmp and --enable-openmp is defined])]
+)
+AC_DEFINE(__OPENMP__)
+fi
+
 if test "$maintainer_mode" = "yes"; then
 AM_CFLAGS="$AM_CFLAGS -O0 -g -pg"
-AM_LDFLAGS="/lib/gcrt1.o"
+AM_LDFLAGS="$AM_LIBFLAGS /lib/gcrt1.o"
 fi
 
 #library functions

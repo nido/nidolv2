@@ -127,7 +127,7 @@ void prefetch_buffer(float *output, const struct ringbuffer *buffer,
            (unsigned long int) buffer, readindex, buffer->write_index,
            size);
 #endif
-#ifdef DEBUG
+#ifdef EXCESSIVE_DEBUG
     for (i = 0; i < size; i++) {
         assert(((readindex + i) % buffer->size) != buffer->write_index);
     }

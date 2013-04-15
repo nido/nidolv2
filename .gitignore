@@ -38,3 +38,4 @@ nidoamp/test_nidoamp
 refman.pdf
 nidoamp/gmon.out
 nidoamp/test_ringbuffer
+Doxyfile

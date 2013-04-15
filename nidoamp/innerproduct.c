@@ -37,10 +37,11 @@ float inner_product_sse41(float *input, float *kernel)
     for (i = 0; i < FOURIER_SIZE / 4; i++) {
         inputvector = _mm_load_ps(input + i * 4);
         kernelvector = _mm_load_ps(kernel + i * 4);
-        ssetemp =
-            _mm_dp_ps(inputvector, kernelvector, SSE_MASK_RESULT_FIRST);
-        output += _mm_cvtss_f32(ssetemp);
+        ssetemp = _mm_add_ss(ssetemp, 
+            _mm_dp_ps(inputvector, kernelvector, SSE_MASK_RESULT_FIRST)
+		);
     }
+    output = _mm_cvtss_f32(ssetemp);
     // do the parts not done in sse
     for (i *= 4; i < FOURIER_SIZE; i++) {
         output += input[i] * kernel[i];

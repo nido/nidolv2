@@ -9,19 +9,19 @@ AC_CONFIG_MACRO_DIR([.])
 
 # Options
 AC_ARG_ENABLE(maintainer-mode,
-	[AS_HELP_STRING([  --enable-maintainer-mode],
+	[AS_HELP_STRING([--enable-maintainer-mode],
 		[build with debugging and no optimization])
 	],[maintainer_mode=yes],[maintainer_mode=no])
 
-AC_ARG_ENABLE(openmp, [AS_HELP_STRING([  --enable-openmp]
+AC_ARG_ENABLE(openmp, [AS_HELP_STRING([--enable-openmp]
 		[build with OpenMP Multiprocessor support])
 	], [openmp=yes], [openmp=no])
 
 #AC_ARG_ENABLE (feature, help-string, [action-if-given], [action-if-not-given])
 
-AC_ARG_ENABLE(sse41, [AS_HELP_STRING([  --enable-sse41]
-		[build with SSE 4.1 support])
-	], [ax_cv_have_sse41_ext=$enableval], [])
+AC_ARG_ENABLE(sse41, [AS_HELP_STRING([--enable-sse41]
+		[Build with SSE 4.1 support]) AS_HELP_STRING([--disable-sse41] [Build Without SSE 4.1 support])
+	], [ax_cv_have_sse41_ext=$enableval;sse41require=yes], [])
 
 
 
@@ -42,9 +42,14 @@ AC_LANG_C
 AC_PROG_CC
 
 #programs 
-AC_CHECK_PROG([CPPCHECK], [cppcheck], [cppcheck], [true])
-AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex], [])
-AC_CHECK_PROG([CPPCHECK], [lv2peg], [lv2peg], [AC_MSG_ERROR([Cannot find lv2peg])])
+AC_CHECK_PROG([CPPCHECK], [cppcheck], [cppcheck], [false])
+AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex], [false])
+AC_CHECK_PROG([LV2PEG],   [lv2peg],   [lv2peg],   [false])
+if test "$LV2PEG" = "false"; then
+	AC_MSG_ERROR([Cannot find lv2peg])
+fi
+AC_CHECK_PROG([INDENT],   [indent],   [indent],   [false])
+
 AC_PROG_LN_S
 AC_PROG_LIBTOOL
 
@@ -65,6 +70,10 @@ AC_TYPE_UINT32_T
 
 #compiler specifics
 AX_EXT
+
+if test "$sse41require" = "yes" -a "$ax_cv_check_cflags___msse4_2" = "no"; then
+	AC_MSG_ERROR([SSE 4.1 support requested but not suported by compiler])
+fi
 AM_CFLAGS="$AM_CFLAGS -Wall $SIMD_FLAGS"
 
 if test "$openmp" = "yes"; then

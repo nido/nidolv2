@@ -36,11 +36,11 @@ float inner_product_sse41(float *input, float *kernel)
     float output = 0;
     __m128 inputvector;
     __m128 kernelvector;
-    __m128 ssetemp;
+    __m128 ssetemp = _mm_setzero_ps();
     int i;
-    for (i = 0; i < FOURIER_SIZE / 4; i++) {
-        inputvector = _mm_load_ps(input + i * 4);
-        kernelvector = _mm_load_ps(kernel + i * 4);
+    for (i = 0; i < FOURIER_SIZE - 3; i += 4) {
+        inputvector = _mm_load_ps(input + i);
+        kernelvector = _mm_load_ps(kernel + i);
         ssetemp = _mm_add_ss(ssetemp, 
             _mm_dp_ps(inputvector, kernelvector, SSE_MASK_RESULT_FIRST)
 		);
@@ -115,7 +115,7 @@ void set_inner_product(float (**function_name) (float *, float *))
 	}
 #ifdef __SSE4_1__
     measure = measure_function(inner_product);
-	if (measure < fastest){
+	if (measure < fastest  || 1){
         *function_name = inner_product_sse41;
 	}
 #endif                          //__SSE4_1__

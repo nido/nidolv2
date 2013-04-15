@@ -37,14 +37,16 @@ float inner_product_sse41(float *input, float *kernel)
     __m128 inputvector;
     __m128 kernelvector;
     __m128 ssetemp = _mm_setzero_ps();
+	__m128 sseunit = _mm_set_ps(1.0f, 1.0f, 1.0f, 1.0f);
     int i;
     for (i = 0; i < FOURIER_SIZE - 3; i += 4) {
         inputvector = _mm_load_ps(input + i);
         kernelvector = _mm_load_ps(kernel + i);
         ssetemp = _mm_add_ss(ssetemp, 
-            _mm_dp_ps(inputvector, kernelvector, SSE_MASK_RESULT_FIRST)
+            _mm_mul_ps(inputvector, kernelvector)
 		);
     }
+    _mm_dp_ps(ssetemp, sseunit, SSE_MASK_RESULT_FIRST);
     output = _mm_cvtss_f32(ssetemp);
     // do the parts not done in sse
     for (i *= 4; i < FOURIER_SIZE; i++) {
@@ -78,7 +80,7 @@ float measure_function(float (*function_name) (float *, float *))
 	struct timeval start;
 	struct timeval end;
 	float result;
-	float input[FOURIER_SIZE];
+	float input[FOURIER_SIZE * 9];
 	float kernel[FOURIER_SIZE];
 	int i;
 	float check = 0.0;
@@ -87,15 +89,16 @@ float measure_function(float (*function_name) (float *, float *))
 		input[i]= i%2 - 0.5;
 		kernel[i] = i%2 - 0.5;
 	}
+	for (i=FOURIER_SIZE; i < FOURIER_SIZE*8; i++){
+		input[i]= i%2 - 0.5;
+	}
+
 	gettimeofday(&start, NULL);
-	for (i=0; i < FOURIER_SIZE * 32 * 8; i++){
-		check += function_name(input, kernel);
+	for (i=0; i < FOURIER_SIZE*8; i++){
+		check += function_name(input + i, kernel);
 	}
 	gettimeofday(&end, NULL);
 	result = end.tv_sec - start.tv_sec + (end.tv_usec - start.tv_usec) * USEC_IN_SEC;
-	if (input[FOURIER_SIZE - 1] != check){
-		printf("answer: %f\n", input[FOURIER_SIZE - 1]);
-	}
 #ifdef DEBUG
 	printf("measured %f\n", result);
 #endif
@@ -112,10 +115,17 @@ void set_inner_product(float (**function_name) (float *, float *))
     measure = measure_function(inner_product);
 	if (measure < fastest){
 		*function_name = inner_product;
+		fastest = measure;
 	}
 #ifdef __SSE4_1__
     measure = measure_function(inner_product);
-	if (measure < fastest  || 1){
+	if (measure < fastest){
+        *function_name = inner_product_sse41;
+		fastest = measure;
+	} else {
+#ifdef DEBUG
+		printf("measure is broken, sse41 is faster on dev system\n");
+#endif
         *function_name = inner_product_sse41;
 	}
 #endif                          //__SSE4_1__

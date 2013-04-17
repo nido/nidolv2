@@ -62,7 +62,7 @@ AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]
 AM_CFLAGS="$AM_CFLAGS -Wall"
 
 if test "$maintainer_mode" = "yes"; then
-AM_CFLAGS="$AM_CFLAGS -Werror -g -O0"
+AM_CFLAGS="$AM_CFLAGS -Werror -g -O0 -fprofile-arcs -ftest-coverage"
 fi
 
 AC_SUBST(AM_CFLAGS)

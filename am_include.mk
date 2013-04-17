@@ -19,6 +19,6 @@ cppcheck-local:  $(SOURCES)
 
 
 .ttl.peg:
-	lv2peg $< $@
+	@LV2PEG@ $< $@
 
 .PHONY: indent indent-recurse indent-local

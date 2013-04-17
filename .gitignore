@@ -4,6 +4,7 @@ Doxylog
 *~
 *.o
 *.lo
+*.la
 # autoreconf -si
 Makefile.in
 aclocal.m4
@@ -33,11 +34,8 @@ nidoamp/manifest.ttl
 nidoamp/nidoamp.ttl
 # make
 nidoamp/.libs/
-nidoamp/nidoamp.la
-nidoamp/nidoamp.lo
-nidoamp/nidoamp.o
 nidoamp/nidoamp.peg
 nidoamp/test_nidoamp
-nidoamp/test_nidoamp.o
 refman.pdf
+nidoamp/gmon.out
 nidoamp/test_ringbuffer

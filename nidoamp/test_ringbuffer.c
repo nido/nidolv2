@@ -18,7 +18,6 @@ for (i=0; i<512; i++){
 }
 printf("write/read test succes\n");
 
-buffer = malloc(sizeof(float) * 1024);
 yay = init_buffer(1024, -1);
 
 for (i=0; i<512; i++){

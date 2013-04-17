@@ -25,11 +25,13 @@ bool has_sse41(void)
     unsigned int eax, ebx, ecx, edx;
     cpuid(1, &eax, &ebx, &ecx, &edx);
     result = ((ecx & FLAG_SSE42) != 0);
+#ifdef VERBOSE_DEBUG
     if (result) {
         printf("%x - succes\n", ecx);
     } else {
         printf("%x - failure\n", ecx);
     }
+#endif
     return result;
 }
 

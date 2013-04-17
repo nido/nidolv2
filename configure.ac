@@ -1,6 +1,6 @@
 # AC_TYPE_UINT32_T and LT_INIT cause problems in 2.59. 2.69 is the
 # lowest version number tested
-AC_PREREQ([2.69])
+AC_PREREQ([2.68])
 AC_INIT([nidolv2], [0.0.1])
 
 AC_CANONICAL_SYSTEM
@@ -51,14 +51,7 @@ AC_TYPE_UINT32_T
 #structures
 
 #compiler specifics
-# TODO: Check whether that can actually be done
-#AM_CFLAGS="$AM_CFLAGS -Wall -msse4.1 "
-AM_CFLAGS="$AM_CFLAGS -Wall -msse4.1 -fopenmp"
-#AM_CFLAGS="$AM_CFLAGS -Wall" # uncomment for non-optimised code
-if test "$maintainer_mode" = "yes"; then
-AM_CFLAGS="$AM_CFLAGS -O0 -g -pg"
-AM_LDFLAGS="/lib/gcrt1.o"
-fi
+AM_CFLAGS="$AM_CFLAGS -Wall"
 
 #library functions
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
@@ -73,7 +66,7 @@ LT_INIT([disable-static dlopen])
 
 #am conditionals
 AM_CONDITIONAL([MAKE_PDF], [test x$PDFLATEX != x])
-
+AM_CONDITIONAL([COVERAGE], [test "$maintainer_mode" != "no"])
 # information
 if test -n $PDFLATEX; then
 AC_MSG_WARN([Cannot build pdf documentation])
@@ -91,14 +84,14 @@ AC_SUBST(lv2dir)
 AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]*'`])
 
 if test "$maintainer_mode" = "yes"; then
-AM_CFLAGS="$AM_CFLAGS -Werror -g -O0 -fprofile-arcs -ftest-coverage"
+AM_CFLAGS="$AM_CFLAGS -fprofile-arcs -ftest-coverage -g -pg"
+AM_LDFLAGS="/lib/gcrt1.o"
+# take out the -O2 bit if you are going to debug
+CFLAGS=`echo $CFLAGS | sed "s/-O2/-O0/g"`
+#LIBS="$LIBS -lc_p"
+AC_DEFINE(DEBUG)
 fi
 
 AC_SUBST(AM_CFLAGS)
-
-if test "$maintainer_mode" = "yes"; then
-AC_DEFINE(DEBUG)
-AC_CHECK_LIB([c_p], [read],,)
-fi
 AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh Doxyfile])
 AC_OUTPUT

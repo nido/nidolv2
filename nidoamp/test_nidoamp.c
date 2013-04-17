@@ -4,7 +4,7 @@
 #include <lv2.h>
 #include "nidoamp.h"
 
-#define DATASIZE 10485760
+#define DATASIZE 1024000
 
 /** Test program to run like a host to see if it actually operates and have full debug capabilities */
 int main(void)
@@ -18,20 +18,16 @@ int main(void)
     float latency;
 
     j = 0;
-<<<<<<< HEAD
     hipass = 1.0;
+    latency = 0.0;
 
     handle = instantiate(&descriptor, 96000.0, "Irrelevant", NULL);
-    connect_port(handle, 4, &latency);
     buffer = malloc(sizeof(float) * (DATASIZE + (int)latency));
-=======
     hipass = 0.0;
-    buffer = malloc(sizeof(float) * DATASIZE);
     if (buffer == NULL) {
         printf("%s\n", "Not enough memory");
         exit(EXIT_FAILURE);
     }
->>>>>>> d2e290c6e0d5a2a715cf47bdd3ccff7bc13be353
     for (i = 0; i < DATASIZE; i++) {
         buffer[i] = (float) rand() / RAND_MAX - 1;
     }

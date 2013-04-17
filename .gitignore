@@ -1,4 +1,5 @@
 documentation/
+nidoamp/gmon.out
 Doxylog
 *~
 *.o
@@ -39,4 +40,4 @@ nidoamp/nidoamp.peg
 nidoamp/test_nidoamp
 nidoamp/test_nidoamp.o
 refman.pdf
-nidoamp/gmon.out
+nidoamp/test_ringbuffer

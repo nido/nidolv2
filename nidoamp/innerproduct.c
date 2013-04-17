@@ -4,9 +4,6 @@
  *
  */
 
-#ifndef __SSE4_1__
-#error Fuck you, need sse41
-#endif
 #ifdef __SSE4_1__
 #include <xmmintrin.h>
 #include <smmintrin.h>

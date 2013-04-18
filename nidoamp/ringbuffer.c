@@ -102,17 +102,18 @@ void peek_buffer(float *output, const struct ringbuffer *buffer,
 }
 
 void look_buffer(float **lookie, const struct ringbuffer *buffer,
-		 const int size, const int prefetch_count)
+                 const int size, const int prefetch_count)
 {
-	float window[FOURIER_SIZE];
-	int start = (buffer->read_index + prefetch_count) % buffer->size;
-	if (start + size > buffer->size) {
-		prefetch_buffer(window, buffer, size, prefetch_count);
-		*lookie = window;
-	} else {
-		*lookie = buffer->buffer + start;
-	}
+    float window[FOURIER_SIZE];
+    int start = (buffer->read_index + prefetch_count) % buffer->size;
+    if (start + size > buffer->size) {
+        prefetch_buffer(window, buffer, size, prefetch_count);
+        *lookie = window;
+    } else {
+        *lookie = buffer->buffer + start;
+    }
 }
+
 void prefetch_buffer(float *output, const struct ringbuffer *buffer,
                      const int size, const int prefetch_count)
 {

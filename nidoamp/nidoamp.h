@@ -33,8 +33,8 @@ typedef struct {
     fftwf_complex *kernel_buffer;
     /** Buffer for the convolution kernel */
     float *convolution_buffer;
-	/** Buffer for the previous convolution kernel */
-	float *previous_buffer;
+    /** Buffer for the previous convolution kernel */
+    float *previous_buffer;
     /** Buffer from and to which fourier transforms are done */
     float *fourier_buffer;
     /** buffer for convolution */

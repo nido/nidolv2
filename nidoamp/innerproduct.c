@@ -37,14 +37,13 @@ float inner_product_sse41(float *input, float *kernel)
     __m128 inputvector;
     __m128 kernelvector;
     __m128 ssetemp = _mm_setzero_ps();
-	__m128 sseunit = _mm_set_ps(1.0f, 1.0f, 1.0f, 1.0f);
+    __m128 sseunit = _mm_set_ps(1.0f, 1.0f, 1.0f, 1.0f);
     int i;
     for (i = 0; i < FOURIER_SIZE - 3; i += 4) {
         inputvector = _mm_loadu_ps(input + i);
         kernelvector = _mm_loadu_ps(kernel + i);
-        ssetemp = _mm_add_ss(ssetemp, 
-            _mm_mul_ps(inputvector, kernelvector)
-		);
+        ssetemp = _mm_add_ss(ssetemp, _mm_mul_ps(inputvector, kernelvector)
+            );
     }
     _mm_dp_ps(ssetemp, sseunit, SSE_MASK_RESULT_FIRST);
     output = _mm_cvtss_f32(ssetemp);
@@ -77,57 +76,59 @@ float inner_product(float *input, float *kernel)
 
 float measure_function(float (*function_name) (float *, float *))
 {
-	struct timeval start;
-	struct timeval end;
-	float result;
-	float input[FOURIER_SIZE * 9];
-	float kernel[FOURIER_SIZE];
-	int i;
-	float check = 0.0;
+    struct timeval start;
+    struct timeval end;
+    float result;
+    float input[FOURIER_SIZE * 9];
+    float kernel[FOURIER_SIZE];
+    int i;
+    float check = 0.0;
 
-	for (i=0; i < FOURIER_SIZE; i++){
-		input[i]= i%2 - 0.5;
-		kernel[i] = i%2 - 0.5;
-	}
-	for (i=FOURIER_SIZE; i < FOURIER_SIZE*8; i++){
-		input[i]= i%2 - 0.5;
-	}
+    for (i = 0; i < FOURIER_SIZE; i++) {
+        input[i] = i % 2 - 0.5;
+        kernel[i] = i % 2 - 0.5;
+    }
+    for (i = FOURIER_SIZE; i < FOURIER_SIZE * 8; i++) {
+        input[i] = i % 2 - 0.5;
+    }
 
-	gettimeofday(&start, NULL);
-	for (i=0; i < FOURIER_SIZE*8; i++){
-		check += function_name(input + i, kernel);
-	}
-	gettimeofday(&end, NULL);
-	result = end.tv_sec - start.tv_sec + (end.tv_usec - start.tv_usec) * USEC_IN_SEC;
+    gettimeofday(&start, NULL);
+    for (i = 0; i < FOURIER_SIZE * 8; i++) {
+        check += function_name(input + i, kernel);
+    }
+    gettimeofday(&end, NULL);
+    result =
+        end.tv_sec - start.tv_sec + (end.tv_usec -
+                                     start.tv_usec) * USEC_IN_SEC;
 #ifdef DEBUG
-	printf("measured %f\n", result);
+    printf("measured %f\n", result);
 #endif
-	return result;
+    return result;
 }
 
 /** return the fastest inner product function for this system
  */
 void set_inner_product(float (**function_name) (float *, float *))
 {
-	float fastest=INFINITY;
-	float measure;
+    float fastest = INFINITY;
+    float measure;
 
     measure = measure_function(inner_product);
-	if (measure < fastest){
-		*function_name = inner_product;
-		fastest = measure;
-	}
+    if (measure < fastest) {
+        *function_name = inner_product;
+        fastest = measure;
+    }
 #ifdef __SSE4_1__
     measure = measure_function(inner_product);
-	if (measure < fastest){
+    if (measure < fastest) {
         *function_name = inner_product_sse41;
-		fastest = measure;
-	} else {
+        fastest = measure;
+    } else {
 #ifdef DEBUG
-		printf("measure is broken, sse41 is faster on dev system\n");
+        printf("measure is broken, sse41 is faster on dev system\n");
 #endif
         *function_name = inner_product_sse41;
-	}
+    }
 #endif                          //__SSE4_1__
 }
 

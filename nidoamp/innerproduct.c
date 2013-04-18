@@ -40,8 +40,8 @@ float inner_product_sse41(float *input, float *kernel)
 	__m128 sseunit = _mm_set_ps(1.0f, 1.0f, 1.0f, 1.0f);
     int i;
     for (i = 0; i < FOURIER_SIZE - 3; i += 4) {
-        inputvector = _mm_load_ps(input + i);
-        kernelvector = _mm_load_ps(kernel + i);
+        inputvector = _mm_loadu_ps(input + i);
+        kernelvector = _mm_loadu_ps(kernel + i);
         ssetemp = _mm_add_ss(ssetemp, 
             _mm_mul_ps(inputvector, kernelvector)
 		);
@@ -49,7 +49,7 @@ float inner_product_sse41(float *input, float *kernel)
     _mm_dp_ps(ssetemp, sseunit, SSE_MASK_RESULT_FIRST);
     output = _mm_cvtss_f32(ssetemp);
     // do the parts not done in sse
-    for (i *= 4; i < FOURIER_SIZE; i++) {
+    for (i; i < FOURIER_SIZE; i++) {
         output += input[i] * kernel[i];
     }
     return output;

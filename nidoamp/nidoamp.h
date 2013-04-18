@@ -33,6 +33,8 @@ typedef struct {
     fftwf_complex *kernel_buffer;
     /** Buffer for the convolution kernel */
     float *convolution_buffer;
+	/** Buffer for the previous convolution kernel */
+	float *previous_buffer;
     /** Buffer from and to which fourier transforms are done */
     float *fourier_buffer;
     /** buffer for convolution */
@@ -57,4 +59,3 @@ void deactivate(LV2_Handle instance);
 void cleanup( /*@only@ */ LV2_Handle instance);
 LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor(uint32_t index);
 // vim: ts=4 sw=4 textwidth=72
-//

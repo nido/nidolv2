@@ -28,7 +28,7 @@
 #include <omp.h>
 #endif
 
-#define BUFFER_SIZE (FOURIER_SIZE * 3)
+#define BUFFER_SIZE (FOURIER_SIZE * 10)
 
 /** Instantiate the plugin.
  *
@@ -58,10 +58,12 @@ LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
     amp->kernel_buffer =
         fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->kernel_buffer != NULL);
-    amp->fourier_buffer = fftwf_malloc(sizeof(float) * (FOURIER_SIZE));
+    amp->fourier_buffer = fftwf_malloc(sizeof(float) * FOURIER_SIZE);
     assert(amp->fourier_buffer != NULL);
     amp->in_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->in_buffer != NULL);
+	amp->previous_buffer = malloc(sizeof(float) * FOURIER_SIZE);
+	assert(amp->previous_buffer != NULL);
     amp->out_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->out_buffer != NULL);
     amp->buffer_index = 0;
@@ -170,19 +172,24 @@ void compute_kernel(Amp * amp)
 
     // make sure the kernel window size is normalised
     normalisation_factor = 1.0 / FOURIER_SIZE;
-    // not sure if we should be doing this, but, well
-    /*
-       for (i = 0; i < FOURIER_SIZE; i++) {
-       normalisation_factor += abs(amp->fourier_buffer[i]);
-       }
-       if (normalisation_factor != 0.0) {
-       normalisation_factor = 1 / normalisation_factor;
-       }
-     */
     for (i = 0; i < FOURIER_SIZE; i++) {
         amp->fourier_buffer[i] *= normalisation_factor;
     }
     //printf("normalisation factor %f\n", normalisation_factor);
+}
+
+void average_kernels(float* kernel, Amp* amp)
+{
+	int i;
+   	for (i = 0; i < FOURIER_SIZE; i++) {
+		kernel[i] = (amp->previous_buffer[i] * (i+1) + amp->fourier_buffer[i] * (FOURIER_SIZE - i - 1)) / (FOURIER_SIZE);
+#ifdef DEBUGf
+		if (!((kernel[i] >= amp->previous_buffer[i] || kernel[i] >= amp->fourier_buffer[i]) &&
+ 		    (kernel[i] <= amp->previous_buffer[i] || kernel[i] <= amp->fourier_buffer[i]))){
+				printf("%f, %f, %f\n",  kernel[i], amp->previous_buffer[i], amp->fourier_buffer[i]);
+		}
+#endif
+	}
 }
 
 /** processes the actual fourier transformation
@@ -199,6 +206,7 @@ void fftprocess(Amp * amp)
     float *fourier_buffer = amp->fourier_buffer;
     float output[FOURIER_SIZE];
 
+	bcopy(amp->fourier_buffer, amp->previous_buffer, sizeof(float) * FOURIER_SIZE);
     peek_buffer(fourier_buffer, amp->in_buffer, FOURIER_SIZE);
     compute_kernel(amp);
 #ifdef __OPENMP__
@@ -206,10 +214,15 @@ void fftprocess(Amp * amp)
 #endif
     for (i = 0; i < FOURIER_SIZE; i++) {
         float inbuf[FOURIER_SIZE];
+		float kernel[FOURIER_SIZE];
+		//float* inbufp = (float*)inbuf; // pointer type
 
         prefetch_buffer(inbuf, amp->in_buffer, FOURIER_SIZE, i);
+		
+		average_kernels(kernel, amp);
+		//bcopy(kernel, amp->fourier_buffer, sizeof(float) * FOURIER_SIZE);
 
-        output[i] = (amp->convolve_func) (inbuf, amp->fourier_buffer);
+        output[i] = (amp->convolve_func) (inbuf, kernel);
     }
 
     write_buffer(amp->out_buffer, output, FOURIER_SIZE);

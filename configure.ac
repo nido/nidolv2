@@ -133,5 +133,5 @@ if test "$maintainer_mode" = "yes"; then
 AC_DEFINE(DEBUG)
 AC_CHECK_LIB([c_p], [read],,)
 fi
-AC_CONFIG_FILES([Makefile nidoamp/Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh Doxyfile])
+AC_CONFIG_FILES([Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh Doxyfile])
 AC_OUTPUT

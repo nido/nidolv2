@@ -1,42 +1,44 @@
 AUTOMAKE_OPTIONS = foreign dist-bzip2
 
 bin_SCRIPTS = lv2wisdom.sh
+check_PROGRAMS = test_nidoamp test_ringbuffer
+TESTS = $(check_PROGRAMS)
+BUILT_SOURCES = nidoamp/nidoamp.peg
+
+nidoamp_LTLIBRARIES = nidoamp.la
+nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/nidoamp.peg nidoamp/ringbuffer.c nidoamp/ringbuffer.h nidoamp/innerproduct.c nidoamp/innerproduct.h nidoamp/cpuid.c nidoamp/cpuid.h
+nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
+nidoamp_DATA = nidoamp/nidoamp.ttl nidoamp/manifest.ttl
+
+test_nidoamp_SOURCES = nidoamp/test_nidoamp.c
+#EXTRA_test_nidoamp_SOURCES = nidoamp/sse41.c # do this once sse is "properly" installed
+test_nidoamp_LDADD = $(am_nidoamp_la_OBJECTS)
+test_nidoamp_DEPENDENCIES = nidoamp.la
+
+test_ringbuffer_SOURCES = nidoamp/test_ringbuffer.c
+test_ringbuffer_LDADD = ringbuffer.o
+test_ringbuffer_DEPENDENCIES = nidoamp.la
+
+nidoampdir = @lv2dir@/nidoamp.lv2
+
+#if MAKE_PDF #commented
+#pdf_DATA = refman.pdf
+#endif
+
+indent:  $(SOURCES)
+	test -z "$(SOURCES)" || indent -kr -nut -ts4 -d0 $^
 
 
+cppcheck:  $(SOURCES)
+	test -z "$(SOURCES)" || @CPPCHECK@ --error-exitcode=2 $^
 
-if MAKE_PDF
-pdf_DATA = refman.pdf
+.ttl.peg:
+	@LV2PEG@ $< $@
 
-documentation/latex/refman.pdf: documentation
-	$(MAKE) -C documentation/latex refman.pdf
-
-refman.pdf: documentation/latex/refman.pdf
-	cp $^ $@
-
-endif #MAKE_PDF
-
-html_DIRDATA = documentation/html
-
-ACLOCAL_AMFLAGS = -I .
-SUBDIRS = nidoamp
-
-documentation: Doxyfile README.md
-	doxygen $<
-
-documentation/html: documentation
-	$(MAKE) $(AM_MAKEFLAGS) documentation
-
-html-am: documentation/html
-pdf-am: refman.pdf
-EXTRA_DIST = README.md
-
-MAINTAINERCLEANFILES=Makefile.in aclocal.m4 nidoamp/Makefile.in config.guess config.sub configure depcomp install-sh ltmain.sh missing libtool.m4  lt~obsolete.m4  ltoptions.m4  ltsugar.m4  ltversion.m4
-
-install-html-am: $(html_DIRDATA)
-	test -z "$<" || cp -r $(html_DIRDATA) "$(DESTDIR)$(htmldir)/html"
-
-CLEANFILES=Doxylog refman.pdf
+CLEANFILES=Doxylog refman.pdf nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out
 clean-local:
 	rm -rf documentation/
 
-include $(top_srcdir)/am_include.mk
+MAINTAINERCLEANFILES=Makefile.in aclocal.m4 nidoamp/Makefile.in config.guess config.sub configure depcomp install-sh ltmain.sh missing libtool.m4  lt~obsolete.m4  ltoptions.m4  ltsugar.m4  ltversion.m4
+
+.PHONY: indent indent-recurse indent-local

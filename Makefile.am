@@ -19,11 +19,25 @@ test_ringbuffer_SOURCES = nidoamp/test_ringbuffer.c
 test_ringbuffer_LDADD = ringbuffer.o
 test_ringbuffer_DEPENDENCIES = nidoamp.la
 
-nidoampdir = @lv2dir@/nidoamp.lv2
+#Documentation
+if MAKE_DOC
+html_DATA = doxygen/html/*
+htmldir=${docdir}/html
 
-#if MAKE_PDF #commented
-#pdf_DATA = refman.pdf
-#endif
+if MAKE_PDF
+pdf_DATA = doxygen/latex/refman.pdf
+doxygen/latex/refman.pdf: doxygen
+	$(MAKE) $(AM_MAKEFLAGS) -C doxygen/latex refman.pdf
+endif # MAKE_PDF
+
+endif # MAKE_DOC
+
+doxygen/html/*: doxygen
+doxygen: Doxyfile.in
+	$(MAKE) $(AM_MAKEFLAGS) Doxyfile
+	doxygen
+
+
 
 indent:  $(SOURCES)
 	test -z "$(SOURCES)" || indent -kr -nut -ts4 -d0 $^
@@ -35,7 +49,9 @@ cppcheck:  $(SOURCES)
 .ttl.peg:
 	@LV2PEG@ $< $@
 
-CLEANFILES=Doxylog refman.pdf nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out
+nidoampdir = @lv2dir@/nidoamp.lv2
+
+CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out
 clean-local:
 	rm -rf documentation/
 

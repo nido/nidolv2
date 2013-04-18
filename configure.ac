@@ -47,12 +47,14 @@ AC_PROG_CC
 
 #programs 
 AC_CHECK_PROG([CPPCHECK], [cppcheck], [cppcheck], [false])
+AC_CHECK_PROG([INDENT],   [indent],   [indent],   [false])
 AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex], [false])
+AC_CHECK_PROG([DOXYGEN],   [doxygen],   [doxygen],   [false])
+
 AC_CHECK_PROG([LV2PEG],   [lv2peg],   [lv2peg],   [false])
 if test "$LV2PEG" = "false"; then
-	AC_MSG_ERROR([Cannot find lv2peg])
+	AC_MSG_ERROR([Cannot find lv2peg needed to create pegfile])
 fi
-AC_CHECK_PROG([INDENT],   [indent],   [indent],   [false])
 
 AC_PROG_LN_S
 AC_PROG_LIBTOOL
@@ -77,8 +79,12 @@ AC_TYPE_UINT32_T
 AM_CFLAGS="$AM_CFLAGS -Wall"
 
 if test "$maintainer_mode" = "yes"; then
+AC_DEFINE(DEBUG)
 AM_CFLAGS="$AM_CFLAGS -O0 -g -pg"
 AM_LDFLAGS="$AM_LIBFLAGS /lib/gcrt1.o"
+AC_CHECK_LIB([c_p], [read],,)
+# Take out GCC's -O2 from the equation
+CFLAGS=`echo $CFLAGS | sed "s/-O2//g"`
 fi
 
 if test "$sse41" = "yes"; then
@@ -110,10 +116,15 @@ LT_INIT([disable-static dlopen])
 
 
 # information
+if test -z "$DOXYGEN"; then
+AC_MSG_WARN([Cannot build documentation, need doxygen])
+fi
+AM_CONDITIONAL([MAKE_DOC], [test $DOXYGEN != false])
+
 if test -z "$PDFLATEX"; then
 AC_MSG_WARN([Cannot build pdf documentation])
 fi
-AM_CONDITIONAL([MAKE_PDF], [test x$PDFLATEX != x])
+AM_CONDITIONAL([MAKE_PDF], [test $PDFLATEX != false])
 
 # macro redefinition
 AC_DEFINE_UNQUOTED(FOURIER_SIZE, $with_fouriersize)
@@ -126,12 +137,9 @@ AC_SUBST(lv2dir)
 
 AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]*'`])
 
-
 AC_SUBST(AM_CFLAGS)
 
-if test "$maintainer_mode" = "yes"; then
-AC_DEFINE(DEBUG)
-AC_CHECK_LIB([c_p], [read],,)
-fi
+
 AC_CONFIG_FILES([Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh Doxyfile])
+echo HTMLDIR IS  $htmldir
 AC_OUTPUT

@@ -16,13 +16,12 @@ test_nidoamp_LDADD = $(am_nidoamp_la_OBJECTS)
 test_nidoamp_DEPENDENCIES = nidoamp.la
 
 test_ringbuffer_SOURCES = nidoamp/test_ringbuffer.c
-test_ringbuffer_LDADD = ringbuffer.o
+test_ringbuffer_LDADD = ringbuffer.lo
 test_ringbuffer_DEPENDENCIES = nidoamp.la
 
 #Documentation
 if MAKE_DOC
 html_DATA = doxygen/html/*
-htmldir=${docdir}/html
 
 if MAKE_PDF
 pdf_DATA = doxygen/latex/refman.pdf
@@ -31,6 +30,34 @@ doxygen/latex/refman.pdf: doxygen
 endif # MAKE_PDF
 
 endif # MAKE_DOC
+
+#if MAKE_CALL
+##valgrind --tool=callgrind --callgrind-out-file=test_nidoamp.callgrind ./test_nidoamp && gprof2dot -f callgrind test_nidoamp.callgrind | dot -Tpdf > out.pd
+%.callgraph: %
+	valgrind --tool=callgrind --callgrind-out-file=$@ ./$<
+
+.callgraph.dot:
+	gprof2dot -o$@ -f callgrind $<
+
+.dot.pdf:
+	dot -Tpdf -o$@ $<
+
+callgraph: $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) $(addsuffix .pdf,$^)
+
+#endif #MAKE_CALL
+
+if MAKE_COV
+.gcno.info:
+	geninfo -i -o baseline-$@ .
+	./`echo $< | sed "s/.gcno//"`
+	geninfo -t `echo $< | sed "s/.gcno//"` -o measure-$@ .
+	lcov -a baseline-$@ -a measure-$@ -o $@
+
+coverage: $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) $(addsuffix .info,$^)
+	genhtml -s -p $(top_srcdir) -t $(PACKAGE) --legend --sort -o coverage $(addsuffix .info,$^)
+endif # MAKE_COV
 
 doxygen/html/*: doxygen
 doxygen: Doxyfile.in
@@ -51,7 +78,7 @@ cppcheck:  $(SOURCES)
 
 nidoampdir = @lv2dir@/nidoamp.lv2
 
-CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out
+CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out *.info .libs/*.info *.gcda .libs/*.gcda *.gcno .libs/*.gcno
 clean-local:
 	rm -rf documentation/
 

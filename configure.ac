@@ -27,7 +27,11 @@ AC_ARG_ENABLE(openmp,
 	[openmp=yes],
 	[openmp=no])
 
-
+AC_ARG_ENABLE(coverage,
+	[AS_HELP_STRING([--enable-coverage]
+		[do code coverage checking])],
+	[coverage=$enableval],
+	[coverage=yes]) # TODO: make it so it depends on gcov availability
 
 AC_ARG_WITH(fouriersize,
 	[--with-fouriersize=SIZE  Fourier Transform input size (default=512)],
@@ -50,11 +54,13 @@ AC_CHECK_PROG([CPPCHECK], [cppcheck], [cppcheck], [false])
 AC_CHECK_PROG([INDENT],   [indent],   [indent],   [false])
 AC_CHECK_PROG([PDFLATEX], [pdflatex], [pdflatex], [false])
 AC_CHECK_PROG([DOXYGEN],   [doxygen],   [doxygen],   [false])
-
+AC_CHECK_PROG([DOXYGEN],   [doxygen],   [doxygen],   [false])
+AC_CHECK_PROG([DOXYGEN],   [doxygen],   [doxygen],   [false])
 AC_CHECK_PROG([LV2PEG],   [lv2peg],   [lv2peg],   [false])
-if test "$LV2PEG" = "false"; then
-	AC_MSG_ERROR([Cannot find lv2peg needed to create pegfile])
-fi
+AC_CHECK_PROG([GCOV],   [gcov],   [gcov],   [false])
+AC_CHECK_PROG([GENHTML],   [genhtml],   [genhtml],   [false])
+AC_CHECK_PROG([GENINFO],   [geninfo],   [geninfo],   [false])
+#AC_CHECK_PROG([],   [],   [],   [false])
 
 AC_PROG_LN_S
 AC_PROG_LIBTOOL
@@ -78,13 +84,27 @@ AC_TYPE_UINT32_T
 
 AM_CFLAGS="$AM_CFLAGS -Wall"
 
+#TODO clean this up
+
 if test "$maintainer_mode" = "yes"; then
 AC_DEFINE(DEBUG)
-AM_CFLAGS="$AM_CFLAGS -O0 -g -pg"
-AM_LDFLAGS="$AM_LIBFLAGS /lib/gcrt1.o"
-AC_CHECK_LIB([c_p], [read],,)
 # Take out GCC's -O2 from the equation
 CFLAGS=`echo $CFLAGS | sed "s/-O2//g"`
+fi
+
+
+
+if test "$coverage" = "yes"; then
+	if test GCOV = "false"; then
+AC_MSG_ERROR([gcov is needed to do coverage])
+	fi
+	if test GENHTML = "false"; then
+AC_MSG_ERROR([genhtml (from lcov) is required to report on coverage])
+	fi
+	if test GENINFO = "false"; then
+AC_MSG_ERROR([geninfo (from lcov) is required to report on coverage])
+	fi
+AM_CFLAGS="$AM_CFLAGS -fprofile-arcs -ftest-coverage"
 fi
 
 if test "$sse41" = "yes"; then
@@ -116,6 +136,10 @@ LT_INIT([disable-static dlopen])
 
 
 # information
+if test "$LV2PEG" = "false"; then
+	AC_MSG_ERROR([Cannot find lv2peg needed to create pegfile])
+fi
+
 if test -z "$DOXYGEN"; then
 AC_MSG_WARN([Cannot build documentation, need doxygen])
 fi
@@ -125,6 +149,9 @@ if test -z "$PDFLATEX"; then
 AC_MSG_WARN([Cannot build pdf documentation])
 fi
 AM_CONDITIONAL([MAKE_PDF], [test $PDFLATEX != false])
+AC_MSG_CHECKING([whether to make a coverage report])
+AC_MSG_RESULT([$coverage])
+AM_CONDITIONAL([MAKE_COV], [test "$coverage" = yes])
 
 # macro redefinition
 AC_DEFINE_UNQUOTED(FOURIER_SIZE, $with_fouriersize)
@@ -139,7 +166,10 @@ AC_SUBST([SHREXT],[`/usr/bin/libtool --config | grep shrext | grep -Go '\.[[^"]]
 
 AC_SUBST(AM_CFLAGS)
 
+AC_SUBST(GENHTML)
+AC_SUBST(GENINFO)
+
+
 
 AC_CONFIG_FILES([Makefile nidoamp/manifest.ttl nidoamp/nidoamp.ttl lv2wisdom.sh Doxyfile])
-echo HTMLDIR IS  $htmldir
 AC_OUTPUT

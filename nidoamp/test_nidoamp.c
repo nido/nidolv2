@@ -11,7 +11,6 @@ int main(void)
 {
     float *buffer;
     float hipass;
-    float output;
     LV2_Handle handle;
     int i;
     int j;
@@ -47,5 +46,4 @@ int main(void)
     cleanup(handle);
     free(buffer);
     fftwf_cleanup();
-    return (0);
 }

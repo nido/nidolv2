@@ -46,4 +46,5 @@ int main(void)
     cleanup(handle);
     free(buffer);
     fftwf_cleanup();
+    return(0);
 }

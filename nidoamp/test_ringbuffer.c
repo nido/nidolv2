@@ -25,5 +25,6 @@ int main(void)
     }
 
     free_buffer(yay);
+    free(buffer);
     return (0);
 }

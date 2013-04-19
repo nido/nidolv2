@@ -48,7 +48,8 @@ callgraph: $(check_PROGRAMS)
 #endif #MAKE_CALL
 
 if MAKE_COV
-.gcno.info:
+%.info: %
+	lcov -z -d .
 	lcov -c -i -d . -o baseline-$@
 	./`echo $< | sed "s/.gcno//"`
 	lcov -c -d . -t `echo $< | sed "s/.gcno//"` -o measure-$@

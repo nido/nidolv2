@@ -24,14 +24,14 @@ AC_ARG_ENABLE(sse41,
 AC_ARG_ENABLE(openmp,
 	[AS_HELP_STRING([--enable-openmp]
 		[build with OpenMP Multiprocessor support])],
-	[openmp=yes],
+	[openmp=$enableval],
 	[openmp=no])
 
 AC_ARG_ENABLE(coverage,
 	[AS_HELP_STRING([--enable-coverage]
 		[do code coverage checking])],
 	[coverage=$enableval],
-	[coverage=yes]) # TODO: make it so it depends on gcov availability
+	[])
 
 AC_ARG_WITH(fouriersize,
 	[--with-fouriersize=SIZE  Fourier Transform input size (default=512)],
@@ -92,9 +92,10 @@ AC_DEFINE(DEBUG)
 CFLAGS=`echo $CFLAGS | sed "s/-O2//g"`
 fi
 
-
-
-if test "$coverage" = "yes"; then
+if test "$CC" != "gcc" -a "$coverage" = "yes"; then
+AC_MSG_ERROR([can only go coverage using GCC, sorry])
+fi
+if test "$coverage" != "no" -a  "$CC" = "gcc"; then
 	if test GCOV = "false"; then
 AC_MSG_ERROR([gcov is needed to do coverage])
 	fi
@@ -119,6 +120,9 @@ if test "$openmp" = "yes"; then
 		[AM_CFLAGS="$AM_CFLAGS -fopenmp"],
 		[AC_ERROR([Compiler does not understand -fopenmp and --enable-openmp is defined])]
 	)
+if test "$CC" = "clang"; then
+AC_MSG_ERROR([clang does not understand openmp properly according to field tests])
+fi
 AC_DEFINE(__OPENMP__)
 fi
 

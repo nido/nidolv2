@@ -13,10 +13,10 @@ AC_ARG_ENABLE(maintainer-mode,
 		[build with debugging and no optimization])
 	],[maintainer_mode=yes],[maintainer_mode=no])
 
-AC_ARG_ENABLE(sse41,
-	[AS_HELP_STRING([--enable-sse41] [Build with SSE 4.1 support])
-	 AS_HELP_STRING([--disable-sse41] [Build Without SSE 4.1 support]) ],
-	[sse41=$enableval],
+AC_ARG_ENABLE(sse3,
+	[AS_HELP_STRING([--enable-sse3] [Build with SSE 4.1 support])
+	 AS_HELP_STRING([--disable-sse3] [Build Without SSE 4.1 support]) ],
+	[sse3=$enableval],
 	[])
 
 # mayby something with AX_EXT for "all i can do"
@@ -92,10 +92,18 @@ AC_DEFINE(DEBUG)
 CFLAGS=`echo $CFLAGS | sed "s/-O2//g"`
 fi
 
-if test "$CC" != "gcc" -a "$coverage" = "yes"; then
-AC_MSG_ERROR([can only go coverage using GCC, sorry])
-fi
 if test "$coverage" != "no" -a  "$CC" = "gcc"; then
+coverage="yes"
+fi
+
+AC_MSG_CHECKING([whether to make a coverage report])
+AC_MSG_RESULT([$coverage])
+
+if test "$coverage" = "yes"; then
+AM_CFLAGS="$AM_CFLAGS -fprofile-arcs -ftest-coverage"
+	if test "$CC" != "gcc"; then
+AC_MSG_ERROR([can only go coverage using GCC, sorry])
+	fi
 	if test GCOV = "false"; then
 AC_MSG_ERROR([gcov is needed to do coverage])
 	fi
@@ -105,12 +113,11 @@ AC_MSG_ERROR([genhtml (from lcov) is required to report on coverage])
 	if test GENINFO = "false"; then
 AC_MSG_ERROR([geninfo (from lcov) is required to report on coverage])
 	fi
-AM_CFLAGS="$AM_CFLAGS -fprofile-arcs -ftest-coverage"
 fi
 
-if test "$sse41" = "yes"; then
-	AX_CHECK_COMPILE_FLAG(-msse4.1,
-		[AM_CFLAGS="$AM_CFLAGS -msse4.1"],
+if test "$sse3" = "yes"; then
+	AX_CHECK_COMPILE_FLAG(-msse3,
+		[AM_CFLAGS="$AM_CFLAGS -msse3"],
 		[AC_MSG_ERROR([SSE 4.1 support requested but not suported by compiler]) ]
 	)
 fi
@@ -153,8 +160,6 @@ if test -z "$PDFLATEX"; then
 AC_MSG_WARN([Cannot build pdf documentation])
 fi
 AM_CONDITIONAL([MAKE_PDF], [test $PDFLATEX != false])
-AC_MSG_CHECKING([whether to make a coverage report])
-AC_MSG_RESULT([$coverage])
 AM_CONDITIONAL([MAKE_COV], [test "$coverage" = yes])
 
 # macro redefinition

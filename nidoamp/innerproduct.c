@@ -48,7 +48,7 @@ float inner_product_sse41(float *input, float *kernel)
     _mm_dp_ps(ssetemp, sseunit, SSE_MASK_RESULT_FIRST);
     output = _mm_cvtss_f32(ssetemp);
     // do the parts not done in sse
-    for (i; i < FOURIER_SIZE; i++) {
+    for (; i < FOURIER_SIZE; i++) {
         output += input[i] * kernel[i];
     }
     return output;
@@ -119,7 +119,7 @@ void set_inner_product(float (**function_name) (float *, float *))
         fastest = measure;
     }
 #ifdef __SSE4_1__
-    measure = measure_function(inner_product);
+    measure = measure_function(inner_product_sse41);
     if (measure < fastest) {
         *function_name = inner_product_sse41;
         fastest = measure;

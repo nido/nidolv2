@@ -307,6 +307,7 @@ void cleanup(LV2_Handle instance)
     fftwf_free(amp->kernel_buffer);
     free_buffer(amp->in_buffer);
     free_buffer(amp->out_buffer);
+    free(amp->previous_buffer);
     fftwf_destroy_plan(amp->forward);
     fftwf_destroy_plan(amp->backward);
     free(amp);

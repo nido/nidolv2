@@ -49,14 +49,15 @@ callgraph: $(check_PROGRAMS)
 
 if MAKE_COV
 .gcno.info:
-	geninfo -i -o baseline-$@ .
+	lcov -c -i -d . -o baseline-$@
 	./`echo $< | sed "s/.gcno//"`
-	geninfo -t `echo $< | sed "s/.gcno//"` -o measure-$@ .
-	lcov -a baseline-$@ -a measure-$@ -o $@
+	lcov -c -d . -t `echo $< | sed "s/.gcno//"` -o measure-$@
+	lcov -a baseline-$@ -a measure-$@ -o total-$@
+	lcov -e total-$@ "$(abs_top_srcdir)/*" -o $@
 
 coverage: $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) $(addsuffix .info,$^)
-	genhtml -s -p $(top_srcdir) -t $(PACKAGE) --legend --sort -o coverage $(addsuffix .info,$^)
+	genhtml -s -t $(PACKAGE) --legend --sort -o coverage $(addsuffix .info,$^)
 endif # MAKE_COV
 
 doxygen/html/*: doxygen

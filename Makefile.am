@@ -56,9 +56,9 @@ if MAKE_COV
 	lcov -a baseline-$@ -a measure-$@ -o total-$@
 	lcov -e total-$@ "$(abs_top_srcdir)/*" -o $@
 
-coverage: $(check_PROGRAMS)
-	$(MAKE) $(AM_MAKEFLAGS) $(addsuffix .info,$^)
-	genhtml -s -t $(PACKAGE) --legend --sort -o coverage $(addsuffix .info,$^)
+coverage: $(addsuffix .info,$(check_PROGRAMS))
+	$(MAKE) $(AM_MAKEFLAGS) $^
+	genhtml -s -t $(PACKAGE) --legend --sort -o coverage $^
 endif # MAKE_COV
 
 doxygen/html/*: doxygen
@@ -66,7 +66,10 @@ doxygen: Doxyfile.in
 	$(MAKE) $(AM_MAKEFLAGS) Doxyfile
 	doxygen
 
+%.valgrind: %
+	valgrind --leak-check=full -v ./$< 2>$@
 
+valgrind: $(addsuffix .valgrind,$(check_PROGRAMS))
 
 indent:  $(SOURCES)
 	test -z "$(SOURCES)" || indent -kr -nut -ts4 -d0 $^

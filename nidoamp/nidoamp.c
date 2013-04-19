@@ -218,7 +218,7 @@ void fftprocess(Amp * amp)
     peek_buffer(fourier_buffer, amp->in_buffer, FOURIER_SIZE);
     compute_kernel(amp);
 #ifdef __OPENMP__
-#pragma omp parallel for default(shared)
+#pragma omp parallel for
 #endif
     for (i = 0; i < FOURIER_SIZE; i++) {
         float inbuf[FOURIER_SIZE];

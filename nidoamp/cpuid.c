@@ -19,12 +19,12 @@ void cpuid(unsigned info, unsigned *eax, unsigned *ebx, unsigned *ecx,
       ::"edi");
 }
 
-bool has_sse41(void)
+bool has_feature(int flag)
 {
     bool result;
     unsigned int eax, ebx, ecx, edx;
     cpuid(1, &eax, &ebx, &ecx, &edx);
-    result = ((ecx & FLAG_SSE42) != 0);
+    result = ((ecx & flag) != 0);
 #ifdef VERBOSE_DEBUG
     if (result) {
         printf("%x - succes\n", ecx);
@@ -35,4 +35,7 @@ bool has_sse41(void)
     return result;
 }
 
+bool has_sse3(void) {
+	return(has_feature(FLAG_SSE42));
+}
 // vim: ts=4 sw=4 textwidth=72

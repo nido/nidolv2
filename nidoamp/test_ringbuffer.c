@@ -16,7 +16,7 @@ int main(void)
         write_buffer(yay, buffer, 1020);
         read_buffer(buffer, yay, 1020);
     }
-
+    free_buffer(yay);
     yay = init_buffer(1024, -1);
 
     for (i = 0; i < 512; i++) {
@@ -24,5 +24,6 @@ int main(void)
         write_buffer(yay, buffer, 1020);
     }
 
+    free_buffer(yay);
     return (0);
 }

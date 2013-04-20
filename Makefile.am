@@ -23,6 +23,11 @@ test_ringbuffer_DEPENDENCIES = nidoamp.la
 if MAKE_DOC
 html_DATA = doxygen/html/*
 
+doxygen/html/*: doxygen
+doxygen: Doxyfile.in $(SOURCES) README.md
+	$(MAKE) $(AM_MAKEFLAGS) Doxyfile
+	doxygen
+
 if MAKE_PDF
 pdf_DATA = doxygen/latex/refman.pdf
 doxygen/latex/refman.pdf: doxygen
@@ -60,11 +65,6 @@ coverage: $(addsuffix .info,$(check_PROGRAMS))
 	$(MAKE) $(AM_MAKEFLAGS) $^
 	genhtml -s -t $(PACKAGE) --legend --sort -o coverage $^
 endif # MAKE_COV
-
-doxygen/html/*: doxygen
-doxygen: Doxyfile.in
-	$(MAKE) $(AM_MAKEFLAGS) Doxyfile
-	doxygen
 
 %.valgrind: %
 	valgrind --leak-check=full -v ./$< 2>$@

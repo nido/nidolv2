@@ -100,7 +100,7 @@ AC_MSG_CHECKING([whether to make a coverage report])
 AC_MSG_RESULT([$coverage])
 
 if test "$coverage" = "yes"; then
-AM_CFLAGS="$AM_CFLAGS -fprofile-arcs -ftest-coverage"
+AM_CFLAGS="$AM_CFLAGS -fprofile-arcs -ftest-coverage -DNDEBUG"
 	if test "$CC" != "gcc"; then
 AC_MSG_ERROR([can only go coverage using GCC, sorry])
 	fi

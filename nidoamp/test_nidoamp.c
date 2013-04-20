@@ -15,17 +15,18 @@ int main(void)
     LV2_Handle handle;
     int i;
     int j;
+    float latency;
 
+    buffer = malloc(sizeof(float) * DATASIZE);
+    assert(buffer != NULL);
     j = 0;
     hipass = 2.0;
-    buffer = malloc(sizeof(float) * DATASIZE);
 
-    assert(buffer != NULL);
+    handle = instantiate(&descriptor, 96000.0, "Irrelevant", NULL);
+    connect_port(handle, 4, &latency);
     for (i = 0; i < DATASIZE; i++) {
         buffer[i] = (float) rand() / RAND_MAX - 1;
     }
-
-    handle = instantiate(&descriptor, 96000.0, "Irrelevant", NULL);
     connect_port(handle, 0, &hipass);
     connect_port(handle, 3, &hipass);
     connect_port(handle, 5, &hipass);

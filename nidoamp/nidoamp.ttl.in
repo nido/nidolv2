@@ -67,6 +67,7 @@
 		a lv2:OutputPort, lv2:ControlPort ;
 		lv2:symbol "latency";
    		lv2:name "Latency";
+		lv2:default @FOURIER_SIZE@ ;
 		lv2:index 4;
 		lv2:portProperty lv2:reportsLatency ;
 	] .

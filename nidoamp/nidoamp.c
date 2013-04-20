@@ -314,16 +314,6 @@ void cleanup(LV2_Handle instance)
 
 }
 
-/** Function with an interesting name that is required but not used
- *
- * @param uri a parameter that probably points to something lv2 related
- */
-/*@null@*/ static const void *extension_data( /*@unused@ */ const char
-                                             *uri)
-{
-    return NULL;
-}
-
 /** A descriptor of this plugin with links to all its (externally
  * usable) functions. 
  */
@@ -335,7 +325,7 @@ const LV2_Descriptor descriptor = {
     run,
     deactivate,
     cleanup,
-    extension_data
+    NULL
 };
 
 /** Function outputting the plugin descriptor for a host to use

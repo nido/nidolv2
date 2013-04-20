@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,12 +17,10 @@ int main(void)
     int j;
 
     j = 0;
-    hipass = 0.0;
+    hipass = 2.0;
     buffer = malloc(sizeof(float) * DATASIZE);
-    if (buffer == NULL) {
-        printf("%s\n", "Not enough memory");
-        exit(EXIT_FAILURE);
-    }
+
+    assert(buffer != NULL);
     for (i = 0; i < DATASIZE; i++) {
         buffer[i] = (float) rand() / RAND_MAX - 1;
     }
@@ -42,6 +41,9 @@ int main(void)
         }
         run(handle, j);
     }
+
+    assert(lv2_descriptor(0) != NULL);
+    assert(lv2_descriptor(1) == NULL);
     deactivate(handle);
     cleanup(handle);
     free(buffer);

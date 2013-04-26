@@ -8,41 +8,41 @@
 int main(void);
 int smoketest(void);
 int latencytest(void);
-Amp* get_amp(void);
+Amp *get_amp(void);
 
 #define DATASIZE 1048576
 
 /** Test program to run like a host to see if it actually operates and have full debug capabilities; basically just do a smoke test */
 int main(void)
 {
-    if (latencytest() == EXIT_FAILURE){
-        return(EXIT_FAILURE);
+    if (smoketest() == EXIT_FAILURE) {
+        return (EXIT_FAILURE);
     }
-    if (smoketest() == EXIT_FAILURE){
-        return(EXIT_FAILURE);
+    if (latencytest() == EXIT_FAILURE) {
+        return (EXIT_FAILURE);
     }
-
     return EXIT_SUCCESS;
 }
 
-Amp* get_amp(void){
-    Amp* amp;
+Amp *get_amp(void)
+{
+    Amp *amp;
     const LV2_Descriptor *descriptor = lv2_descriptor(0);
-    amp = (Amp*)instantiate(descriptor, 96000.0, "", NULL);
+    amp = (Amp *) instantiate(descriptor, 96000.0, "", NULL);
     return amp;
 }
 
 int latencytest(void)
 {
-    Amp* amp = get_amp();
+    Amp *amp = get_amp();
     float zero = 0.0;
     float latency = 0.0;
     float *inbuffer;
     float *outbuffer;
     int i;
 
-    inbuffer = calloc(DATASIZE , sizeof(float));
-    outbuffer = calloc(DATASIZE , sizeof(float));
+    inbuffer = calloc(DATASIZE, sizeof(float));
+    outbuffer = calloc(DATASIZE, sizeof(float));
     inbuffer[0] = 1.0;
 
     connect_port(amp, 4, &latency);
@@ -55,8 +55,8 @@ int latencytest(void)
     activate(amp);
     run(amp, DATASIZE);
 
-    for (i=0; i<DATASIZE; i++){
-        if ((outbuffer[i] > 0.9) && (i != (int)latency)){
+    for (i = 0; i < DATASIZE; i++) {
+        if ((outbuffer[i] > 0.9) && (i != (int) latency)) {
             printf("Measured latency %i, expected %f\n", i, latency);
             return EXIT_FAILURE;
         }

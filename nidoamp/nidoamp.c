@@ -254,7 +254,7 @@ void run(LV2_Handle instance, uint32_t n_samples)
     uint32_t io_index = 0;
     uint32_t readcount;
 
-    *(amp->latency) = (float) FOURIER_SIZE;
+    *(amp->latency) = (float) FOURIER_SIZE * 2;
     do {
 
         uint32_t bufferlength =

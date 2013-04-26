@@ -7,6 +7,14 @@
 
 #define FLAG_SSE42 0x0080000
 
+/** Canonical example cpuid function from wikipedia
+ *
+ * @param info feature of cpuid you wish to adress
+ * @param eax output value of eax register
+ * @param ebx output value of ebx register
+ * @param ecx output value of ecx register
+ * @param edx output value of edx register
+ */
 void cpuid(unsigned info, unsigned *eax, unsigned *ebx, unsigned *ecx,
            unsigned *edx)
 {
@@ -19,6 +27,12 @@ void cpuid(unsigned info, unsigned *eax, unsigned *ebx, unsigned *ecx,
       ::"edi");
 }
 
+/** Returns whether the cpu runnigng this supports a feature
+ *
+ * @param flag the flag for the feature you wish to query
+ *
+ * @return whether the feature is supported in the runtime environment
+ */
 bool has_feature(int flag)
 {
     bool result;
@@ -35,7 +49,13 @@ bool has_feature(int flag)
     return result;
 }
 
-bool has_sse3(void) {
-	return(has_feature(FLAG_SSE42));
+/** Checks whether sse3 is supported.
+ *
+ * @return whether the runtime environment supports sse3
+ */
+bool has_sse3(void)
+{
+    return (has_feature(FLAG_SSE42));
 }
+
 // vim: ts=4 sw=4 textwidth=72

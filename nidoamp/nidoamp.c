@@ -95,6 +95,9 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
 {
     Amp *amp = (Amp *) instance;
 
+    assert(port >= 0);
+    assert(port < nidoamp_n_ports);
+
     switch ((enum nidoamp_port_enum) port) {
     case nidoamp_hipass:
         amp->hipass = (float *) data;
@@ -114,12 +117,9 @@ void connect_port(LV2_Handle instance, uint32_t port, void *data)
     case nidoamp_gate:
         amp->gate = (float *) data;
         break;
-    case nidoamp_n_ports:
-        printf("%s severely broken\n", nidoamp_uri);
-        exit(EXIT_FAILURE);
-        break;
+    default:
+        assert(true);
     }
-
 }
 
 /** Activates the plugin.
@@ -178,6 +178,11 @@ void compute_kernel(Amp * amp)
     //printf("normalisation factor %f\n", normalisation_factor);
 }
 
+/** returns a kernel averaged from the two kernels between them
+ *
+ * @param kernel the return pointer for the kernel
+ * @param amp the amp which holds the kernels
+ */
 void average_kernels(float *kernel, Amp * amp)
 {
     int i;
@@ -187,11 +192,10 @@ void average_kernels(float *kernel, Amp * amp)
              amp->fourier_buffer[i] * (FOURIER_SIZE - i -
                                        1)) / (FOURIER_SIZE);
 #ifdef DEBUGf
-        if (!
-            ((kernel[i] >= amp->previous_buffer[i]
-              || kernel[i] >= amp->fourier_buffer[i])
-             && (kernel[i] <= amp->previous_buffer[i]
-                 || kernel[i] <= amp->fourier_buffer[i]))) {
+        if (!((kernel[i] >= amp->previous_buffer[i]
+               || kernel[i] >= amp->fourier_buffer[i])
+              && (kernel[i] <= amp->previous_buffer[i]
+                  || kernel[i] <= amp->fourier_buffer[i]))) {
             printf("%f, %f, %f\n", kernel[i], amp->previous_buffer[i],
                    amp->fourier_buffer[i]);
         }
@@ -250,9 +254,7 @@ void run(LV2_Handle instance, uint32_t n_samples)
     uint32_t io_index = 0;
     uint32_t readcount;
 
-    if (amp->latency != NULL) {
-        *(amp->latency) = (float) FOURIER_SIZE;
-    }
+    *(amp->latency) = (float) FOURIER_SIZE;
     do {
 
         uint32_t bufferlength =

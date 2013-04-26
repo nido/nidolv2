@@ -1,7 +1,10 @@
 #include <stdlib.h>
+#include <assert.h>
 
 #include "ringbuffer.h"
 
+/** smoketest for the ringbuffer
+ */
 int main(void)
 {
     float *buffer;
@@ -10,6 +13,7 @@ int main(void)
     int i;
 
     buffer = malloc(sizeof(float) * 1024);
+    assert(init_buffer(10, 20) == NULL);
     yay = init_buffer(1024, 0);
 
     for (i = 0; i < 512; i++) {

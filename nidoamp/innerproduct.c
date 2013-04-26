@@ -5,7 +5,6 @@
  */
 
 #ifdef __SSE3__
-//#include <xmmintrin.h>
 #include <pmmintrin.h>
 #endif                          //__SSE3__
 #include <stdio.h>
@@ -18,9 +17,6 @@
 
 #define MEASURE_SIZE 1024
 #define USEC_IN_SEC 0.000001
-
-// add one __m128 (val) together
-// _m_hadd_ps(_m_hadd_ps(val, val), irrelevant_val)
 
 #ifdef __SSE3__
 /** Calculates the next step in the output using convolution using
@@ -48,13 +44,13 @@ float inner_product_sse3(float *input, float *kernel)
     }
     _mm_hadd_ps(ssetemp, sseunit);
     output = _mm_cvtss_f32(ssetemp);
-    // do the parts not done in sse
+    // last items if FOURIER_SIZE%4 != 0
     for (; i < FOURIER_SIZE; i++) {
         output += input[i] * kernel[i];
     }
     return output;
 }
-#endif //__SSE3__
+#endif                          //__SSE3__
 
 /** Calculates the next step in the output using convolution
  *
@@ -108,30 +104,29 @@ float measure_function(float (*function_name) (float *, float *))
 }
 
 /** return the fastest inner product function for this system
+ * @param function_name location to store the function pointer
  */
 void set_inner_product(float (**function_name) (float *, float *))
 {
-    float fastest = INFINITY;
-    float measure;
-
-    measure = measure_function(inner_product);
-    if (measure < fastest) {
-        *function_name = inner_product;
-        fastest = measure;
-    }
+    float fastest;
 #ifdef __SSE3__
-	if (has_sse3()){
-	    measure = measure_function(inner_product_sse3);
-	    if (measure < fastest) {
-	        *function_name = inner_product_sse3;
-	        fastest = measure;
-	    } else {
+    float measure;
+#endif                          //__SSE3__
+    *function_name = inner_product;
+    fastest = measure_function(inner_product);
+#ifdef __SSE3__
+    if (has_sse3()) {
+        measure = measure_function(inner_product_sse3);
+        if (measure < fastest) {
+            *function_name = inner_product_sse3;
+            fastest = measure;
+        } else {
 #ifdef DEBUG
-	        printf("measure is broken, sse3 is faster on dev system\n");
+            printf("measure is broken, sse3 is faster on dev system\n");
 #endif
-	        *function_name = inner_product_sse3;
-	    }
-	}
+            *function_name = inner_product_sse3;
+        }
+    }
 #endif                          //__SSE3__
 }
 

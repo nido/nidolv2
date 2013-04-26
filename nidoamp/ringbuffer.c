@@ -30,12 +30,7 @@ struct ringbuffer *init_buffer(size, latency)
         latency = size + latency;
     }
     buffer = malloc(sizeof(struct ringbuffer));
-    if (buffer == NULL) {
-#ifdef VERBOSE_DEBUG
-        printf("cannot allocate struct\n");
-#endif
-        return (struct ringbuffer *) NULL;
-    }
+    assert(buffer != NULL);
     buffer->read_index = 0;
     buffer->size = size;
     buffer->buffer = malloc(sizeof(float) * size);

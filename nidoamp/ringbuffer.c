@@ -17,7 +17,6 @@
  */
 struct ringbuffer *init_buffer(size, latency)
 {
-    int i;
     struct ringbuffer *buffer;
     if (size <= latency) {
 #ifdef VERBOSE_DEBUG
@@ -35,9 +34,7 @@ struct ringbuffer *init_buffer(size, latency)
     buffer->size = size;
     buffer->buffer = malloc(sizeof(float) * size);
     assert(buffer->buffer != NULL);
-    for (i = 0; i < latency; i++) {
-        buffer->buffer[i] = 0.0;
-    }
+    bzero(buffer->buffer, sizeof(float) * latency); // pre-write buffer
     buffer->write_index = latency;
     return buffer;
 }
@@ -68,11 +65,19 @@ void write_buffer(struct ringbuffer *buffer, const float *input,
            (unsigned long int) buffer, buffer->read_index,
            buffer->write_index, size);
 #endif
-    for (i = 0; i < size; i++) {
-        assert(((buffer->write_index + i + 1) % buffer->size) !=
-               buffer->read_index);
-        buffer->buffer[(buffer->write_index + i) % buffer->size] =
-            input[i];
+    int writeindex;
+    i = 0;
+    writeindex = (buffer->write_index) % buffer->size;
+    while (i < size) {
+        int index;
+        int maxread;
+        maxread = buffer->size - writeindex;
+        if (maxread > size - i) {
+            maxread = size - i;
+        }
+        index = (writeindex + i) % buffer->size;
+        memcpy(buffer->buffer + index, input + i, maxread * sizeof(float));
+        i += maxread;
     }
     buffer->write_index = (buffer->write_index + size) % buffer->size;
 }

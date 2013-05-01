@@ -64,6 +64,12 @@ their plans from under their noses seems like a bad idea.
 So if you want to be sure you reclaim everything and use my plugin, be sure
 to run fftw\_cleanup() afterwards
 
+
+Trying to keep as close as realtime as possible, 'allocation' of fourier
+buffers are made on the stack. So if you want to use huge fourier
+windows, make sure your stack is large enough to fit multiple fourier
+buffers.
+
 Known Problems
 --------------
 Trying to compile it with pcc on Fedora18 fails. Reason why may have to

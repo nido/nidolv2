@@ -4,9 +4,10 @@ bin_SCRIPTS = lv2wisdom.sh
 check_PROGRAMS = test_nidoamp test_ringbuffer
 TESTS = $(check_PROGRAMS)
 BUILT_SOURCES = nidoamp/nidoamp.peg
+EXTRA_DIST = README.md
 
 nidoamp_LTLIBRARIES = nidoamp.la
-nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/ringbuffer.c nidoamp/ringbuffer.h nidoamp/innerproduct.c nidoamp/innerproduct.h nidoamp/cpuid.c nidoamp/cpuid.h
+nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/ringbuffer.c nidoamp/ringbuffer.h nidoamp/innerproduct.c nidoamp/innerproduct.h nidoamp/cpuid.c nidoamp/cpuid.h $(BUILT_SOURCES)
 nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 nidoamp_DATA = nidoamp/nidoamp.ttl nidoamp/manifest.ttl
 
@@ -89,7 +90,7 @@ nidoampdir = @lv2dir@/nidoamp.lv2
 
 CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out *.info .libs/*.info *.gcda .libs/*.gcda *.gcno .libs/*.gcno
 clean-local:
-	rm -rf documentation/
+	rm -rf doxygen/
 	rm -rf coverage/
 
 MAINTAINERCLEANFILES=Makefile.in aclocal.m4 nidoamp/Makefile.in config.guess config.sub configure depcomp install-sh ltmain.sh missing libtool.m4  lt~obsolete.m4  ltoptions.m4  ltsugar.m4  ltversion.m4

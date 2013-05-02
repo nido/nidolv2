@@ -88,7 +88,7 @@ cppcheck:  $(BUILT_SOURCES) $(SOURCES)
 
 nidoampdir = @lv2dir@/nidoamp.lv2
 
-CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out *.info .libs/*.info *.gcda .libs/*.gcda *.gcno .libs/*.gcno
+CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out *.info .libs/*.info *.gcda .libs/*.gcda *.gcno .libs/*.gcno *.valgrind
 clean-local:
 	rm -rf doxygen/
 	rm -rf coverage/

@@ -73,10 +73,6 @@ AC_TYPE_UINT32_T
 #structures
 
 #compiler specifics
-<<<<<<< HEAD
-AM_CFLAGS="$AM_CFLAGS -Wall"
-=======
-
 AM_CFLAGS="$AM_CFLAGS -Wall"
 
 if test "$maintainer_mode" = "yes"; then
@@ -98,8 +94,6 @@ if test "$openmp" = "yes"; then
 	)
 AC_DEFINE(__OPENMP__)
 fi
->>>>>>> 2babca6b7680b70bd5dd77234e83cc198ef98712
-
 
 #library functions
 AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_r2c_1d],, [AC_MSG_ERROR([fftw3 float version required])],[]) 
@@ -112,13 +106,9 @@ AC_CHECK_LIB([fftw3f], [fftwf_execute],, [AC_MSG_ERROR([fftw3 float version requ
 AC_ENABLE_SHARED
 LT_INIT([disable-static dlopen])
 
-<<<<<<< HEAD
 #am conditionals
 AM_CONDITIONAL([MAKE_PDF], [test x$PDFLATEX != x])
 AM_CONDITIONAL([COVERAGE], [test "$maintainer_mode" != "no"])
-=======
-
->>>>>>> 2babca6b7680b70bd5dd77234e83cc198ef98712
 # information
 if test -z "$PDFLATEX"; then
 AC_MSG_WARN([Cannot build pdf documentation])

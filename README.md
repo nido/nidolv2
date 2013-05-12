@@ -49,6 +49,13 @@ To compute point X (naive):
 	fourier_matrix[x] = get_matrix(complex_buffer)
 	complex_buffer = dft(input[x])
 
+OpenBSD
+-------
+Requirements on openbsd:
+autoconf
+automake
+AC_MSG_ERROR working
+
 Notes
 -----
 
@@ -63,3 +70,4 @@ their plans from under their noses seems like a bad idea.
 
 So if you want to be sure you reclaim everything and use my plugin, be sure
 to run fftw\_cleanup() afterwards
+

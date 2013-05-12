@@ -2,6 +2,6 @@
 
 void cpuid(unsigned info, unsigned *eax, unsigned *ebx, unsigned *ecx,
            unsigned *edx);
-bool has_sse41(void);
+bool has_sse3(void);
 
 // vim: ts=4 sw=4 textwidth=72

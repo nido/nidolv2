@@ -28,14 +28,22 @@ config.log
 config.status
 libtool
 lv2wisdom.sh
-nidoamp/.deps/
+.deps/
 nidoamp/Makefile
 nidoamp/manifest.ttl
 nidoamp/nidoamp.ttl
 # make
-nidoamp/.libs/
+.libs/
+*.gcno
+*.info
 nidoamp/nidoamp.peg
-nidoamp/test_nidoamp
+test_nidoamp
 refman.pdf
-nidoamp/gmon.out
-nidoamp/test_ringbuffer
+test_ringbuffer
+Doxyfile
+coverage/
+doxygen/
+test_nidoamp.pdf
+test_ringbuffer.pdf
+#make check
+*.gcda

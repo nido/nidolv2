@@ -71,3 +71,15 @@ their plans from under their noses seems like a bad idea.
 So if you want to be sure you reclaim everything and use my plugin, be sure
 to run fftw\_cleanup() afterwards
 
+Known Problems
+--------------
+Trying to compile it with pcc on Fedora18 fails. Reason why may have to
+do with an error in Fedora 18, but the cause has not been properly analysed.
+For now, if you want to compile using pcc, be prepared to get the following
+output.
+
+	make[1]: Entering directory `/home/nido/code/nidolv2'
+	/bin/sh ./libtool --tag=CC   --mode=link /usr/bin/pcc -Wall -g  -module -avoid-version -shared   -o nidoamp.la -rpath /home/nido/code/nidolv2/dest/lib/lv2/nidoamp.lv2 nidoamp.lo ringbuffer.lo innerproduct.lo cpuid.lo  -lfftw3f -lfftw3f -lfftw3f -lfftw3f -lm 
+	libtool: link: /usr/bin/pcc -shared  -fPIC -DPIC  .libs/nidoamp.o .libs/ringbuffer.o .libs/innerproduct.o .libs/cpuid.o   -lfftw3f -lm    -Wl,-soname -Wl,nidoamp.so -o .libs/nidoamp.so
+	/usr/bin/ld: /usr/lib64/pcc/x86_64-unknown-linux-gnu/1.1.0.DEVEL/lib/crtbegin.o: relocation R_X86_64_32S against `.ctors' can not be used when making a shared object; recompile with -fPIC
+	/usr/lib64/pcc/x86_64-unknown-linux-gnu/1.1.0.DEVEL/lib/crtbegin.o: could not read symbols: Bad value

@@ -58,6 +58,8 @@ callgraph/%.callgrind: %
 .dot.pdf:
 	dot -Tpdf -o$@ $<
 
+check-local: cppcheck strict-cppcheck
+
 callgraph: $(check_PROGRAMS)
 	rm -rf callgraph && mkdir callgraph
 	$(MAKE) $(AM_MAKEFLAGS) $(addprefix callgraph/,$(addsuffix .pdf,$^))
@@ -90,8 +92,10 @@ indent: $(SOURCES)
 indent-check: $(SOURCES)
 	test -z "$(SOURCES)" || for x in $(SOURCES); do indent -kr -nut -ts4 -d0 $$x -o $$x.indent; diff $$x $$x.indent && rm $$x.indent || exit; done
 
-cppcheck:  $(BUILT_SOURCES) $(SOURCES)
-	test -z "$(SOURCES)" || @CPPCHECK@ --error-exitcode=2 $^
+cppcheck: $(SOURCES)
+	test -z "$(SOURCES)" || @CPPCHECK@ --quiet --error-exitcode=2 $(filter-out $(BUILT_SOURCES), $(SOURCES))
+strict-cppcheck: $(SOURCES)
+	test -z "$(SOURCES)" || @CPPCHECK@ --quiet --enable=all --error-exitcode=2 $(filter-out $(BUILT_SOURCES), $(SOURCES))
 
 .ttl.peg:
 	@LV2PEG@ $< $@

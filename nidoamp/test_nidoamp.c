@@ -5,14 +5,10 @@
 #include <lv2.h>
 #include "nidoamp.h"
 
-<<<<<<< HEAD
-#define DATASIZE 1024000
-=======
 int main(void);
 int smoketest(void);
 int latencytest(void);
 Amp *get_amp(void);
->>>>>>> remotedev
 
 #define DATASIZE 1048576
 

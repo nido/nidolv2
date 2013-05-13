@@ -30,6 +30,45 @@
 
 #define BUFFER_SIZE (FOURIER_SIZE * 10)
 
+/** Datastructure holding the buffers and links to input and output ports.
+ */
+typedef struct {
+    /** the high pass control fader */
+    float *hipass;
+    /** the low pass control fader */
+    float *lopass;
+    /** output port giving the latency */
+    float *latency;
+    /** the gate control fader */
+    float *gate;
+    /** input buffer as sent by the host */
+    float *input;
+    /** output buffer as sent by the host */
+    float *output;
+
+    /** input buffer, local storage */
+    struct ringbuffer *in_buffer;
+    /** output bufferm local storage */
+    struct ringbuffer *out_buffer;
+    /** Buffer for the complex component to the fourier transform */
+    fftwf_complex *complex_buffer;
+    /** Buffer for the complex kernel */
+    fftwf_complex *kernel_buffer;
+    /** Buffer for the convolution kernel */
+    float *convolution_buffer;
+    /** Buffer for the previous convolution kernel */
+    float *previous_buffer;
+    /** Buffer from and to which fourier transforms are done */
+    float *fourier_buffer;
+    /** buffer for convolution */
+    float (*convolve_func) (float *, float *);
+    /** The location in the internal buffer */
+    int buffer_index;
+    /** The plan to do forward DFT's */
+    fftwf_plan forward;
+    /** the plan to do backward DFT's */
+    fftwf_plan backward;
+} Amp;
 /** Instantiate the plugin.
  *
  * This function initialises the plugin. It includes allocating memory

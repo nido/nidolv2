@@ -6,10 +6,10 @@ TESTS = $(check_PROGRAMS)
 BUILT_SOURCES = nidoamp/nidoamp.peg
 
 nidoamp_LTLIBRARIES = nidoamp.la
-nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/ringbuffer.c nidoamp/ringbuffer.h nidoamp/innerproduct.c nidoamp/innerproduct.h nidoamp/cpuid.c nidoamp/cpuid.h
+nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/ringbuffer.c nidoamp/ringbuffer.h nidoamp/innerproduct.c nidoamp/innerproduct.h nidoamp/cpuid.c nidoamp/cpuid.h $(BUILT_SOURCES)
 nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 nidoamp_DATA = nidoamp/nidoamp.ttl nidoamp/manifest.ttl
-=======
+EXTRA_DIST  = README.md
 
 test_nidoamp_SOURCES = nidoamp/test_nidoamp.c
 #EXTRA_test_nidoamp_SOURCES = nidoamp/sse41.c # do this once sse is "properly" installed
@@ -99,9 +99,9 @@ cppcheck:  $(BUILT_SOURCES) $(SOURCES)
 nidoampdir = @lv2dir@/nidoamp.lv2
 
 CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out *.info .libs/*.info *.gcda .libs/*.gcda *.gcno .libs/*.gcno
-clean-local:
-	rm -rf documentation/
+distclean-local:
 	rm -rf coverage/
+	rm -rf doxygen/
 
 MAINTAINERCLEANFILES=Makefile.in aclocal.m4 nidoamp/Makefile.in config.guess config.sub configure depcomp install-sh ltmain.sh missing libtool.m4  lt~obsolete.m4  ltoptions.m4  ltsugar.m4  ltversion.m4
 

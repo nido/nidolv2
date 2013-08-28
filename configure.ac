@@ -5,7 +5,8 @@ AC_INIT([nidolv2], [0.0.1])
 
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([gnu dist-bzip2 dist-zip])
-AC_CONFIG_MACRO_DIR([.])
+#AC_CONFIG_MACRO_DIR([.])
+AC_CONFIG_MACRO_DIR([m4])
 
 # Options
 AC_ARG_ENABLE(maintainer-mode,
@@ -45,6 +46,8 @@ AC_ARG_WITH([lv2dir],
 	libdir=$with_lv2dir],
 	[lv2dir='$(libdir)/lv2'])
 
+nz_cflags_temp="$CFLAGS"
+
 #languages
 AC_LANG_C
 AC_PROG_CC
@@ -81,14 +84,19 @@ AC_TYPE_UINT32_T
 #structures
 
 #compiler specifics
-AM_CFLAGS="$AM_CFLAGS -Wall"
-
-#TODO clean this up
+#   AX_CHECK_COMPILE_FLAG(FLAG, [ACTION-SUCCESS], [ACTION-FAILURE], [EXTRA-FLAGS])
 
 if test "$maintainer_mode" = "yes"; then
 AC_DEFINE(DEBUG)
-# Take out GCC's -O2 from the equation
-CFLAGS=`echo $CFLAGS | sed "s/-O2//g"`
+
+test "$nz_cflags_temp" = "" && CFLAGS="$nz_cflags_temp"
+AX_CHECK_COMPILE_FLAG([-Wall], [AM_CFLAGS="$AM_CFLAGS -Wall"], [], [])
+AX_CHECK_COMPILE_FLAG([-Wextra], [AM_CFLAGS="$AM_CFLAGS -Wextra"], [], [])
+AX_CHECK_COMPILE_FLAG([-ggdb], [AM_CFLAGS="$AM_CFLAGS -ggdb"], [GGDB=no], [])
+test "$GGDB" = "no" && AX_CHECK_COMPILE_FLAG([-g], [AM_CFLAGS="$AM_CFLAGS -ggdb"], [], [])
+AX_CHECK_COMPILE_FLAG([-Og], [AM_CFLAGS="$AM_CFLAGS -Og"], [OG=no], [])
+test "$OG" = "no" && AX_CHECK_COMPILE_FLAG([-O0], [AM_CFLAGS="$AM_CFLAGS -Og"], [], [])
+
 fi
 
 if test "$coverage" != "no" -a  "$CC" = "gcc"; then
@@ -99,10 +107,15 @@ AC_MSG_CHECKING([whether to make a coverage report])
 AC_MSG_RESULT([$coverage])
 
 if test "$coverage" = "yes"; then
-AM_CFLAGS="$AM_CFLAGS -fprofile-arcs -ftest-coverage -DNDEBUG"
-	if test "$CC" != "gcc"; then
-AC_MSG_ERROR([can only go coverage using GCC, sorry])
-	fi
+AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
+AX_CHECK_COMPILE_FLAG([-fprofile-arcs],
+  [AM_CFLAGS="$AM_CFLAGS -fprofile-arcs"],
+  [AC_MSG_ERROR([Compiler does not understand -fprofile-arcs needed for coverage])], []
+)
+AX_CHECK_COMPILE_FLAG([-ftest-coverage],
+  [AM_CFLAGS="$AM_CFLAGS -ftest-coverage"],
+  [AC_MSG_ERROR([Compiler does not understand -ftest-coverage needed for coverage])], []
+)
 	if test GCOV = "false"; then
 AC_MSG_ERROR([gcov is needed to do coverage])
 	fi
@@ -115,7 +128,7 @@ AC_MSG_ERROR([geninfo (from lcov) is required to report on coverage])
 fi
 
 if test "$sse3" = "yes"; then
-	AX_CHECK_COMPILE_FLAG(-msse3,
+	AX_CHECK_COMPILE_FLAG([-msse3],
 		[AM_CFLAGS="$AM_CFLAGS -msse3"],
 		[AC_MSG_ERROR([SSE 4.1 support requested but not suported by compiler]) ]
 	)
@@ -143,9 +156,6 @@ AC_CHECK_LIB([fftw3f], [fftwf_execute],, [AC_MSG_ERROR([fftw3 float version requ
 AC_ENABLE_SHARED
 LT_INIT([disable-static dlopen])
 
-#am conditionals
-AM_CONDITIONAL([MAKE_PDF], [test x$PDFLATEX != x])
-AM_CONDITIONAL([COVERAGE], [test "$maintainer_mode" != "no"])
 # information
 if test "$LV2PEG" = "false"; then
 	AC_MSG_ERROR([Cannot find lv2peg needed to create pegfile])
@@ -160,7 +170,7 @@ if test -z "$PDFLATEX"; then
 AC_MSG_WARN([Cannot build pdf documentation])
 fi
 AM_CONDITIONAL([MAKE_PDF], [test $PDFLATEX != false])
-AM_CONDITIONAL([MAKE_COV], [test "$coverage" = yes])
+AM_CONDITIONAL([COVERAGE], [test "$coverage" = yes])
 
 # macro redefinition
 AC_DEFINE_UNQUOTED(FOURIER_SIZE, $with_fouriersize)

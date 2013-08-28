@@ -1,4 +1,5 @@
 AUTOMAKE_OPTIONS = foreign dist-bzip2
+ACLOCAL_AMFLAGS = -I m4
 
 bin_SCRIPTS = lv2wisdom.sh
 check_PROGRAMS = test_nidoamp test_ringbuffer
@@ -7,6 +8,7 @@ BUILT_SOURCES = nidoamp/nidoamp.peg
 
 nidoamp_LTLIBRARIES = nidoamp.la
 nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/ringbuffer.c nidoamp/ringbuffer.h nidoamp/innerproduct.c nidoamp/innerproduct.h nidoamp/cpuid.c nidoamp/cpuid.h $(BUILT_SOURCES)
+nidoamp_la_CFLAGS = -I$(top_builddir)/nidoamp
 nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 nidoamp_DATA = nidoamp/nidoamp.ttl nidoamp/manifest.ttl
 EXTRA_DIST  = README.md
@@ -17,7 +19,7 @@ test_nidoamp_LDADD = $(am_nidoamp_la_OBJECTS)
 test_nidoamp_DEPENDENCIES = nidoamp.la
 
 test_ringbuffer_SOURCES = nidoamp/test_ringbuffer.c
-test_ringbuffer_LDADD = ringbuffer.lo
+test_ringbuffer_LDADD = $(am_nidoamp_la_OBJECTS)
 test_ringbuffer_DEPENDENCIES = nidoamp.la
 
 #Documentation
@@ -66,7 +68,7 @@ callgraph: $(check_PROGRAMS)
 
 #endif #MAKE_CALL
 
-if MAKE_COV
+if COVERAGE
 %.info: %
 	lcov -z -d .
 	lcov -c -i -d . -o baseline-$@
@@ -79,7 +81,7 @@ coverage: $(BUILT_SOURCES) $(check_PROGRAMS)
 	rm -rf coverage/
 	$(MAKE) $(AM_MAKEFLAGS) $(addsuffix .info,$(check_PROGRAMS))
 	genhtml -s -t $(PACKAGE) --legend --sort -o coverage  $(addsuffix .info,$(check_PROGRAMS))
-endif # MAKE_COV
+endif # COVERAGE
 
 %.valgrind: %
 	valgrind --leak-check=full -v ./$< 2>$@
@@ -90,12 +92,13 @@ indent: $(SOURCES)
 	test -z "$(SOURCES)" || indent -kr -nut -ts4 -d0 $^
 
 indent-check: $(SOURCES)
-	test -z "$(SOURCES)" || for x in $(SOURCES); do indent -kr -nut -ts4 -d0 $$x -o $$x.indent; diff $$x $$x.indent && rm $$x.indent || exit; done
+	test -z "$^" || for x in $^; do indent -kr -nut -ts4 -d0 $$x -o $$x.indent; diff $$x $$x.indent && rm $$x.indent || exit; done
 
 cppcheck: $(SOURCES)
-	test -z "$(SOURCES)" || @CPPCHECK@ --quiet --error-exitcode=2 $(filter-out $(BUILT_SOURCES), $(SOURCES))
+	test -z "$^" || @CPPCHECK@ --check-config --quiet --error-exitcode=2 $(filter-out $(BUILT_SOURCES),$^)
+
 strict-cppcheck: $(SOURCES)
-	test -z "$(SOURCES)" || @CPPCHECK@ --quiet --enable=all --error-exitcode=2 $(filter-out $(BUILT_SOURCES), $(SOURCES))
+	test -z "$^" || @CPPCHECK@ --check-config --quiet --enable=all --error-exitcode=2 $(filter-out $(BUILT_SOURCES),$^)
 
 .ttl.peg:
 	@LV2PEG@ $< $@

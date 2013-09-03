@@ -18,6 +18,11 @@
 #define MEASURE_SIZE 1024
 #define USEC_IN_SEC 0.000001
 
+#ifndef FOURIER_SIZE
+/** The number of samples to take a fourier transformation of. */
+#define FOURIER_SIZE 512
+#endif
+
 #ifdef __SSE3__
 /** Calculates the next step in the output using convolution using
  * sse4.1
@@ -79,7 +84,6 @@ float measure_function(float (*function_name) (float *, float *))
     float input[FOURIER_SIZE + MEASURE_SIZE];
     float kernel[FOURIER_SIZE];
     int i;
-    float check = 0.0;
 
     for (i = 0; i < FOURIER_SIZE; i++) {
         input[i] = i % 2 - 0.5;
@@ -91,7 +95,7 @@ float measure_function(float (*function_name) (float *, float *))
 
     gettimeofday(&start, NULL);
     for (i = 0; i < MEASURE_SIZE; i++) {
-        check += function_name(input + i, kernel);
+        function_name(input + i, kernel);
     }
     gettimeofday(&end, NULL);
     result =
@@ -109,13 +113,11 @@ float measure_function(float (*function_name) (float *, float *))
 void set_inner_product(float (**function_name) (float *, float *))
 {
     float fastest;
-#ifdef __SSE3__
-    float measure;
-#endif                          //__SSE3__
     *function_name = inner_product;
-    fastest = measure_function(inner_product);
 #ifdef __SSE3__
+    fastest = measure_function(inner_product); // watch out for this
     if (has_sse3()) {
+    	float measure;
         measure = measure_function(inner_product_sse3);
         if (measure < fastest) {
             *function_name = inner_product_sse3;

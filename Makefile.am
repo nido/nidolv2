@@ -2,13 +2,13 @@ AUTOMAKE_OPTIONS = foreign dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
 bin_SCRIPTS = lv2wisdom.sh
-check_PROGRAMS = test_nidoamp test_ringbuffer
+check_PROGRAMS = test_nidoamp test_innerproduct test_ringbuffer
 TESTS = $(check_PROGRAMS)
 BUILT_SOURCES = nidoamp/nidoamp.peg
 
 nidoamp_LTLIBRARIES = nidoamp.la
 nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/ringbuffer.c nidoamp/ringbuffer.h nidoamp/innerproduct.c nidoamp/innerproduct.h nidoamp/cpuid.c nidoamp/cpuid.h $(BUILT_SOURCES)
-nidoamp_la_CFLAGS = -I$(top_builddir)/nidoamp
+nidoamp_la_CFLAGS = -I$(top_builddir)/nidoamp $(AM_CFLAGS)
 nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 nidoamp_DATA = nidoamp/nidoamp.ttl nidoamp/manifest.ttl
 EXTRA_DIST  = README.md
@@ -18,9 +18,14 @@ test_nidoamp_SOURCES = nidoamp/test_nidoamp.c
 test_nidoamp_LDADD = $(am_nidoamp_la_OBJECTS)
 test_nidoamp_DEPENDENCIES = nidoamp.la
 
+test_innerproduct_SOURCES = nidoamp/test_innerproduct.c
+test_innerproduct_LDADD = $(am_nidoamp_la_OBJECTS)
+
 test_ringbuffer_SOURCES = nidoamp/test_ringbuffer.c
 test_ringbuffer_LDADD = $(am_nidoamp_la_OBJECTS)
 test_ringbuffer_DEPENDENCIES = nidoamp.la
+
+nontest_SOURCES = $(nidoamp_la_SOURCES)
 
 #Documentation
 if MAKE_DOC
@@ -38,13 +43,6 @@ doxygen/latex/refman.pdf: doxygen
 endif # MAKE_PDF
 
 endif # MAKE_DOC
-
-nidoamp/coverage.pdf:
-	$(MAKE) $(AM_MAKEFLAGS) -C nidoamp coverage.pdf
-nidoamp/gprof.pdf:
-	$(MAKE) $(AM_MAKEFLAGS) -C nidoamp gprof.pdf
-nidoamp/gprofpic.pdf:
-	$(MAKE) $(AM_MAKEFLAGS) -C nidoamp gprofpic.pdf
 
 manual.pdf: documentation/latex/refman.pdf nidoamp/coverage.pdf nidoamp/gprof.pdf nidoamp/gprofpic.pdf
 	gs  -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=manual.pdf documentation/latex/refman.pdf nidoamp/coverage.pdf nidoamp/gprof.pdf nidoamp/gprofpic.pdf
@@ -75,7 +73,7 @@ if COVERAGE
 	./$<
 	lcov -c -d . -t $< -o measure-$@
 	lcov -a baseline-$@ -a measure-$@ -o total-$@
-	lcov -e total-$@ "$(abs_top_srcdir)/*" -o $@
+	lcov -e total-$@ `realpath $(addprefix $(abs_top_srcdir)/,$(nontest_SOURCES))` -o $@
 
 coverage: $(BUILT_SOURCES) $(check_PROGRAMS)
 	rm -rf coverage/
@@ -95,10 +93,10 @@ indent-check: $(SOURCES)
 	test -z "$^" || for x in $^; do indent -kr -nut -ts4 -d0 $$x -o $$x.indent; diff $$x $$x.indent && rm $$x.indent || exit; done
 
 cppcheck: $(SOURCES)
-	test -z "$^" || @CPPCHECK@ --check-config --quiet --error-exitcode=2 $(filter-out $(BUILT_SOURCES),$^)
+	test -z "$^" || @CPPCHECK@ --suppress=missingIncludeSystem  --check-config --quiet --error-exitcode=2 $(filter-out $(BUILT_SOURCES),$^)
 
 strict-cppcheck: $(SOURCES)
-	test -z "$^" || @CPPCHECK@ --check-config --quiet --enable=all --error-exitcode=2 $(filter-out $(BUILT_SOURCES),$^)
+	test -z "$^" || @CPPCHECK@ --suppress=missingIncludeSystem  --check-config --quiet --enable=all --error-exitcode=2 $(filter-out $(BUILT_SOURCES),$^)
 
 .ttl.peg:
 	@LV2PEG@ $< $@

@@ -250,10 +250,13 @@ void average_kernels_sse(float *kernel, Amp * amp)
     for (i = 0; i < FOURIER_SIZE; i=i+4) {
 		left = _mm_loadu_ps(amp->previous_buffer + i);
 		right = _mm_loadu_ps(amp->fourier_buffer + i);
+
 		out = _mm_div_ps( _mm_add_ps( _mm_mul_ps(left, leftindex), _mm_mul_ps(right, rightindex)), fouriersize);
+
 		leftindex = _mm_add_ps(leftindex, jumpsize);
 		rightindex = _mm_sub_ps(rightindex, jumpsize);
-		_mm_store_ps(amp->fourier_buffer+i, out);
+
+		_mm_store_ps(kernel + i, out);
 	}
 	for (; i < FOURIER_SIZE; i++) {
         kernel[i] =

@@ -12,21 +12,10 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_ARG_ENABLE(maintainer-mode,
 	[AS_HELP_STRING([--enable-maintainer-mode],
 		[build with debugging and no optimization])
-	],[maintainer_mode=yes],[maintainer_mode=no])
+	],[maintainer_mode=$enableval],[maintainer_mode=no])
 
-AC_ARG_ENABLE(sse3,
-	[AS_HELP_STRING([--enable-sse3] [Build with SSE 4.1 support])
-	 AS_HELP_STRING([--disable-sse3] [Build Without SSE 4.1 support]) ],
-	[sse3=$enableval],
-	[])
-
-# mayby something with AX_EXT for "all i can do"
-
-AC_ARG_ENABLE(openmp,
-	[AS_HELP_STRING([--enable-openmp]
-		[build with OpenMP Multiprocessor support])],
-	[openmp=$enableval],
-	[openmp=no])
+NZ_ARG_SET(openmp)
+NZ_ARG_SET(sse3)
 
 AC_ARG_ENABLE(coverage,
 	[AS_HELP_STRING([--enable-coverage]
@@ -63,6 +52,7 @@ AC_CHECK_PROG([LV2PEG],   [lv2peg],   [lv2peg],   [false])
 AC_CHECK_PROG([GCOV],   [gcov],   [gcov],   [false])
 AC_CHECK_PROG([GENHTML],   [genhtml],   [genhtml],   [false])
 AC_CHECK_PROG([GENINFO],   [geninfo],   [geninfo],   [false])
+AC_CHECK_PROG([VALGRIND],   [valgrind],   [valgrind],   [false])
 #AC_CHECK_PROG([],   [],   [],   [false])
 
 AC_PROG_LN_S
@@ -90,13 +80,26 @@ if test "$maintainer_mode" = "yes"; then
 AC_DEFINE(DEBUG)
 
 test "$nz_cflags_temp" = "" && CFLAGS="$nz_cflags_temp"
+#AX_CHECK_COMPILE_FLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [], [])
 AX_CHECK_COMPILE_FLAG([-Wall], [AM_CFLAGS="$AM_CFLAGS -Wall"], [], [])
 AX_CHECK_COMPILE_FLAG([-Wextra], [AM_CFLAGS="$AM_CFLAGS -Wextra"], [], [])
 AX_CHECK_COMPILE_FLAG([-ggdb], [AM_CFLAGS="$AM_CFLAGS -ggdb"], [GGDB=no], [])
-test "$GGDB" = "no" && AX_CHECK_COMPILE_FLAG([-g], [AM_CFLAGS="$AM_CFLAGS -ggdb"], [], [])
+if test "$GGDB" = "no"; then AX_CHECK_COMPILE_FLAG([-g], [AM_CFLAGS="$AM_CFLAGS -g"], [], [])
+fi
 AX_CHECK_COMPILE_FLAG([-Og], [AM_CFLAGS="$AM_CFLAGS -Og"], [OG=no], [])
-test "$OG" = "no" && AX_CHECK_COMPILE_FLAG([-O0], [AM_CFLAGS="$AM_CFLAGS -Og"], [], [])
+if test "$OG" = "no"; then AX_CHECK_COMPILE_FLAG([-O0], [AM_CFLAGS="$AM_CFLAGS -O0"], [], [])
+fi
+#AX_CHECK_COMPILE_FLAG([-fsanitize=address], [AM_CFLAGS="$AM_CFLAGS -fsanitize=address"], [], [])
+#AX_CHECK_COMPILE_FLAG([-fsanitize=thread], [AM_CFLAGS="$AM_CFLAGS -fsanitize=thread"], [], [])
+#AX_CHECK_COMPILE_FLAG([-fsanitize=undefined], [AM_CFLAGS="$AM_CFLAGS -fsanitize=undefined"], [], [])
+else
+AC_DEFINE(NDEBUG)
+fi
 
+if test "x$CC" = "xpcc"; then
+AX_CHECK_COMPILE_FLAG([--enable-shared], [AM_CFLAGS="$AM_CFLAGS --enable-shared"], [], [])
+AX_CHECK_COMPILE_FLAG([-fPIC], [AM_CFLAGS="$AM_CFLAGS -fPIC"], [], [])
+AX_CHECK_COMPILE_FLAG([-fpic], [AM_CFLAGS="$AM_CFLAGS -fpic"], [], [])
 fi
 
 if test "$coverage" != "no" -a  "$CC" = "gcc"; then

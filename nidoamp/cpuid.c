@@ -5,7 +5,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define FLAG_SSE42 0x0080000
+#define FLAG_SSE   2^25
+#define FLAG_SSE3  2^0
+#define FLAG_SSE42 2^20
 
 /** Canonical example cpuid function from wikipedia
  *
@@ -27,26 +29,15 @@ void cpuid(unsigned info, unsigned *eax, unsigned *ebx, unsigned *ecx,
       ::"%edi");
 }
 
-/** Returns whether the cpu runnigng this supports a feature
+/** Checks whether sse is supported.
  *
- * @param flag the flag for the feature you wish to query
- *
- * @return whether the feature is supported in the runtime environment
+ * @return whether the runtime environment supports sse
  */
-bool has_feature(int flag)
+bool has_sse(void)
 {
-    bool result;
-    unsigned int eax, ebx, ecx, edx;
-    cpuid(1, &eax, &ebx, &ecx, &edx);
-    result = ((ecx & flag) != 0);
-#ifdef VERBOSE_DEBUG
-    if (result) {
-        printf("%x - succes\n", ecx);
-    } else {
-        printf("%x - failure\n", ecx);
-    }
-#endif
-    return result;
+	unsigned int scratch, edx;
+	cpuid(1, &scratch, &scratch, &scratch, &edx);
+    return (FLAG_SSE & edx);
 }
 
 /** Checks whether sse3 is supported.
@@ -55,7 +46,9 @@ bool has_feature(int flag)
  */
 bool has_sse3(void)
 {
-    return (has_feature(FLAG_SSE42));
+	unsigned int scratch, ecx;
+	cpuid(1, &scratch, &scratch, &ecx, &scratch);
+    return (FLAG_SSE3 & ecx);
 }
 
 // vim: ts=4 sw=4 textwidth=72

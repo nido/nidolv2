@@ -15,7 +15,7 @@
  *
  * @return the ringbuffer
  */
-struct ringbuffer *init_buffer(size, latency)
+struct ringbuffer *init_buffer(const int size, int latency)
 {
     struct ringbuffer *buffer;
     if (size <= latency) {

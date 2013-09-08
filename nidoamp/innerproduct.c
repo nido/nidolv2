@@ -121,12 +121,7 @@ void set_inner_product(float (**function_name) (float *, float *))
         measure = measure_function(inner_product_sse3);
         if (measure < fastest) {
             *function_name = inner_product_sse3;
-            fastest = measure;
-        } else {
-#ifdef DEBUG
-            printf("measure is broken, sse3 is faster on dev system\n");
-#endif
-            *function_name = inner_product_sse3;
+            //fastest = measure;
         }
     }
 #endif                          //__SSE3__

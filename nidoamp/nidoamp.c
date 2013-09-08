@@ -69,6 +69,7 @@ typedef struct {
     /** the plan to do backward DFT's */
     fftwf_plan backward;
 } Amp;
+
 /** Instantiate the plugin.
  *
  * This function initialises the plugin. It includes allocating memory
@@ -82,39 +83,46 @@ typedef struct {
  *
  * @return an LV2_Handle representation of the datastructure
  */
-LV2_Handle instantiate( /*@unused@ */ const LV2_Descriptor *
-                       descriptor, /*@unused@ */ double rate,
-                       /*@unused@ */ const char *bundle_path,
-                       /*@unused@ */
-                       const LV2_Feature * const *features)
+LV2_Handle instantiate(/*@unused@*/ const LV2_Descriptor *
+                       descriptor, /*@unused@*/ double rate,
+                       /*@unused@*/ const char *bundle_path,
+                       /*@unused@*/ const LV2_Feature* const *features)
 {
     Amp *amp = malloc(sizeof(Amp));
-
     assert(amp != NULL);
+
     amp->complex_buffer =
         fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->complex_buffer != NULL);
+
     amp->kernel_buffer =
         fftwf_malloc(sizeof(fftwf_complex) * COMPLEX_SIZE);
     assert(amp->kernel_buffer != NULL);
+
     amp->fourier_buffer = fftwf_malloc(sizeof(float) * FOURIER_SIZE);
     assert(amp->fourier_buffer != NULL);
+
     amp->in_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->in_buffer != NULL);
+
     amp->previous_buffer = malloc(sizeof(float) * FOURIER_SIZE);
     assert(amp->previous_buffer != NULL);
+
     amp->out_buffer = init_buffer(BUFFER_SIZE, FOURIER_SIZE);
     assert(amp->out_buffer != NULL);
+
     amp->buffer_index = 0;
     set_inner_product(&(amp->convolve_func));
     amp->forward =
         fftwf_plan_dft_r2c_1d(FOURIER_SIZE, amp->fourier_buffer,
                               amp->complex_buffer, FFTW_ESTIMATE);
     assert(amp->forward != NULL);
+
     amp->backward =
         fftwf_plan_dft_c2r_1d(FOURIER_SIZE, amp->kernel_buffer,
                               amp->fourier_buffer, FFTW_ESTIMATE);
     assert(amp->backward != NULL);
+
 #ifdef __OPENMP__
     omp_set_num_threads(omp_get_num_procs());
 #endif
@@ -274,6 +282,7 @@ void fftprocess(Amp * amp)
         //bcopy(kernel, amp->fourier_buffer, sizeof(float) * FOURIER_SIZE);
 
         output[i] = (amp->convolve_func) (inbuf, kernel);
+		assert( output[i] >= -1.0 && output[i] <= 1.0);
     }
 
     write_buffer(amp->out_buffer, output, FOURIER_SIZE);

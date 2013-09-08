@@ -8,7 +8,7 @@ struct ringbuffer {
     float *buffer;
 };
 
-struct ringbuffer *init_buffer(const int size, const int latency);
+struct ringbuffer *init_buffer(const int size, int latency);
 void free_buffer(struct ringbuffer *);
 void write_buffer(struct ringbuffer *, const float *input, const int size);
 void peek_buffer(float *output, const struct ringbuffer *, const int size);

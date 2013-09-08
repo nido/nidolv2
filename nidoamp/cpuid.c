@@ -24,7 +24,7 @@ void cpuid(unsigned info, unsigned *eax, unsigned *ebx, unsigned *ecx,
       "cpuid;"
       "mov %%ebx, %%esi;"
       "mov %%edi, %%ebx;":"+a" (*eax), "=S"(*ebx), "=c"(*ecx), "=d"(*edx)
-      ::"edi");
+      ::"%edi");
 }
 
 /** Returns whether the cpu runnigng this supports a feature

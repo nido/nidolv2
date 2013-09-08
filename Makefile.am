@@ -12,7 +12,6 @@ nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/ringbuffer.c ni
 nidoamp_la_CFLAGS = -I$(top_builddir)/nidoamp $(AM_CFLAGS)
 nidoamp_la_LDFLAGS = -module -avoid-version -shared $(AM_LDFLAGS)
 nidoamp_DATA = nidoamp/nidoamp.ttl nidoamp/manifest.ttl
-EXTRA_DIST  = README.md
 
 test_nidoamp_SOURCES = nidoamp/test_nidoamp.c
 #EXTRA_test_nidoamp_SOURCES = nidoamp/sse41.c # do this once sse is "properly" installed
@@ -26,7 +25,7 @@ test_ringbuffer_SOURCES = nidoamp/test_ringbuffer.c
 test_ringbuffer_LDADD = $(am_nidoamp_la_OBJECTS)
 test_ringbuffer_DEPENDENCIES = nidoamp.la
 
-nontest_SOURCES = $(nidoamp_la_SOURCES)
+nontestsources = $(nidoamp_la_SOURCES)
 
 #Documentation
 if MAKE_DOC
@@ -74,7 +73,7 @@ if COVERAGE
 	./$<
 	lcov -c -d . -t $< -o measure-$@
 	lcov -a baseline-$@ -a measure-$@ -o total-$@
-	lcov -e total-$@ `realpath $(addprefix $(abs_top_srcdir)/,$(nontest_SOURCES))` -o $@
+	lcov -e total-$@ `realpath $(addprefix $(abs_top_srcdir)/,$(nontestsources))` -o $@
 
 coverage: $(BUILT_SOURCES) $(check_PROGRAMS)
 	rm -rf coverage/

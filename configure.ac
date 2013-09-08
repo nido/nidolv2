@@ -16,6 +16,7 @@ AC_ARG_ENABLE(maintainer-mode,
 	],[maintainer_mode=$enableval],[maintainer_mode=no])
 
 NZ_ARG_SET([openmp])
+NZ_ARG_SET([sse],[yes])
 NZ_ARG_SET([sse3],[yes])
 NZ_ARG_SET([coverage])
 
@@ -128,6 +129,13 @@ AC_MSG_ERROR([genhtml (from lcov) is required to report on coverage])
 	if test GENINFO = "false"; then
 AC_MSG_ERROR([geninfo (from lcov) is required to report on coverage])
 	fi
+fi
+
+if test "$sse" != "no"; then
+	AX_CHECK_COMPILE_FLAG([-msse],
+		[AM_CFLAGS="$AM_CFLAGS -msse"],
+		[AC_MSG_ERROR([SSE support requested but not suported by compiler]) ]
+	)
 fi
 
 if test "$sse3" != "no"; then

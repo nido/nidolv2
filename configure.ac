@@ -15,14 +15,9 @@ AC_ARG_ENABLE(maintainer-mode,
 		[build with debugging and no optimization])
 	],[maintainer_mode=$enableval],[maintainer_mode=no])
 
-NZ_ARG_SET(openmp)
-NZ_ARG_SET(sse3)
-
-AC_ARG_ENABLE(coverage,
-	[AS_HELP_STRING([--enable-coverage]
-		[do code coverage checking])],
-	[coverage=$enableval],
-	[])
+NZ_ARG_SET([openmp])
+NZ_ARG_SET([sse3],[yes])
+NZ_ARG_SET([coverage])
 
 AC_ARG_WITH(fouriersize,
 	[--with-fouriersize=SIZE  Fourier Transform input size (default=512)],
@@ -80,15 +75,19 @@ AC_TYPE_UINT32_T
 if test "$maintainer_mode" = "yes"; then
 AC_DEFINE(DEBUG)
 
+# unset autotools cflags setting by AC_PROG_CC
 test "$nz_cflags_temp" = "" && CFLAGS="$nz_cflags_temp"
-#AX_CHECK_COMPILE_FLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [], [])
+
+# set debugging flags
 AX_CHECK_COMPILE_FLAG([-Wall], [AM_CFLAGS="$AM_CFLAGS -Wall"], [], [])
 AX_CHECK_COMPILE_FLAG([-Wextra], [AM_CFLAGS="$AM_CFLAGS -Wextra"], [], [])
 AX_CHECK_COMPILE_FLAG([-ggdb], [AM_CFLAGS="$AM_CFLAGS -ggdb"], [GGDB=no], [])
-if test "$GGDB" = "no"; then AX_CHECK_COMPILE_FLAG([-g], [AM_CFLAGS="$AM_CFLAGS -g"], [], [])
+if test "$GGDB" = "no"; then
+	AX_CHECK_COMPILE_FLAG([-g], [AM_CFLAGS="$AM_CFLAGS -g"], [], [])
 fi
 AX_CHECK_COMPILE_FLAG([-Og], [AM_CFLAGS="$AM_CFLAGS -Og"], [OG=no], [])
-if test "$OG" = "no"; then AX_CHECK_COMPILE_FLAG([-O0], [AM_CFLAGS="$AM_CFLAGS -O0"], [], [])
+if test "$OG" = "no"; then
+	AX_CHECK_COMPILE_FLAG([-O0], [AM_CFLAGS="$AM_CFLAGS -O0"], [], [])
 fi
 #AX_CHECK_COMPILE_FLAG([-fsanitize=address], [AM_CFLAGS="$AM_CFLAGS -fsanitize=address"], [], [])
 #AX_CHECK_COMPILE_FLAG([-fsanitize=thread], [AM_CFLAGS="$AM_CFLAGS -fsanitize=thread"], [], [])
@@ -131,10 +130,10 @@ AC_MSG_ERROR([geninfo (from lcov) is required to report on coverage])
 	fi
 fi
 
-if test "$sse3" = "yes"; then
+if test "$sse3" != "no"; then
 	AX_CHECK_COMPILE_FLAG([-msse3],
 		[AM_CFLAGS="$AM_CFLAGS -msse3"],
-		[AC_MSG_ERROR([SSE 4.1 support requested but not suported by compiler]) ]
+		[AC_MSG_ERROR([SSE 3 support requested but not suported by compiler]) ]
 	)
 fi
 

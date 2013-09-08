@@ -3,4 +3,4 @@ AC_DEFUN([NZ_ARG_SET],
         	[AS_HELP_STRING([--enable-$1]
                 	[build with $1 support])],
 	        [$1=$enableval],
-	        [$1=no])])
+		[m4_if([$2], [], [$1=no], [$1=$2])])])

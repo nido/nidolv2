@@ -29,11 +29,11 @@ function build_thingie()
 }
 
 build_thingie default ""
-build_thingie sse "--enable-sse3 --with-fourier-size=7"
+build_thingie sse "--disable-sse3 --with-fourier-size=7"
 build_thingie openmp "--enable-openmp --with-fourier-size=7"
-build_thingie all "--enable-sse3 --enable-openmp --with-fourier-size=7"
+build_thingie all "--disable-sse3 --enable-openmp --with-fourier-size=7"
 build_thingie maintainer "--enable-maintainer-mode --with-fourier-size=7"
-build_thingie msse "--enable-sse3 --enable-maintainer-mode --with-fourier-size=7"
+build_thingie msse "--disable-sse3 --enable-maintainer-mode --with-fourier-size=7"
 build_thingie mopenmp "--enable-openmp --enable-maintainer-mode --with-fourier-size=7"
-build_thingie mall "--enable-sse3 --enable-openmp --enable-maintainer-mode --with-fourier-size=7"
+build_thingie mall "--disable-sse3 --enable-openmp --enable-maintainer-mode --with-fourier-size=7"
 CC=clang build_thingie clang "--enable-sse3 --enable-maintainer-mode --with-fourier-size=7"

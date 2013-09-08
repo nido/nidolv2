@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-DEFAULTARGS="--bindir=${HOME}/bin --docdir=${HOME}/Documents --with-lv2dir=${HOME}/.lv2 ${ARGS} --with-fouriersize=511"
+DEFAULTARGS="--bindir=${HOME}/bin --docdir=${HOME}/Documents --with-lv2dir=${HOME}/.lv2 ${ARGS} --with-fouriersize=35"
 
 # list of extra arguments for configure
 while (( "$#" ))
@@ -17,7 +17,7 @@ function build_thingie()
 {
 	#this is stupid and overbearing but fixes distcheck
 	chmod -R 777 "build/$1"
-	# clean dir before making
+	#"clean" dir before making
 	rm -rf "build/$1"
 	mkdir -p "build/$1"
 	cd "build/$1"
@@ -29,10 +29,11 @@ function build_thingie()
 }
 
 build_thingie default ""
-build_thingie sse "--enable-sse3"
-build_thingie openmp "--enable-openmp"
-build_thingie all "--enable-sse3 --enable-openmp"
-build_thingie maintainer "--enable-maintainer-mode"
-build_thingie msse "--enable-sse3 --enable-maintainer-mode"
-build_thingie mopenmp "--enable-openmp --enable-maintainer-mode"
-build_thingie mall "--enable-sse3 --enable-openmp --enable-maintainer-mode"
+build_thingie sse "--enable-sse3 --with-fourier-size=7"
+build_thingie openmp "--enable-openmp --with-fourier-size=7"
+build_thingie all "--enable-sse3 --enable-openmp --with-fourier-size=7"
+build_thingie maintainer "--enable-maintainer-mode --with-fourier-size=7"
+build_thingie msse "--enable-sse3 --enable-maintainer-mode --with-fourier-size=7"
+build_thingie mopenmp "--enable-openmp --enable-maintainer-mode --with-fourier-size=7"
+build_thingie mall "--enable-sse3 --enable-openmp --enable-maintainer-mode --with-fourier-size=7"
+CC=clang build_thingie clang "--enable-sse3 --enable-maintainer-mode --with-fourier-size=7"

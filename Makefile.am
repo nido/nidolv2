@@ -5,6 +5,7 @@ bin_SCRIPTS = lv2wisdom.sh
 check_PROGRAMS = test_nidoamp test_innerproduct test_ringbuffer
 TESTS = $(check_PROGRAMS)
 BUILT_SOURCES = nidoamp/nidoamp.peg
+EXTRA_DIST = README.md
 
 nidoamp_LTLIBRARIES = nidoamp.la
 nidoamp_la_SOURCES = nidoamp/nidoamp.c nidoamp/nidoamp.h nidoamp/ringbuffer.c nidoamp/ringbuffer.h nidoamp/innerproduct.c nidoamp/innerproduct.h nidoamp/cpuid.c nidoamp/cpuid.h $(BUILT_SOURCES)
@@ -103,8 +104,9 @@ strict-cppcheck: $(SOURCES)
 
 nidoampdir = @lv2dir@/nidoamp.lv2
 
-CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out *.info .libs/*.info *.gcda .libs/*.gcda *.gcno .libs/*.gcno
-distclean-local:
+CLEANFILES=Doxylog nidoamp/manifest.ttl nidoamp/nidoamp.ttl nidoamp/nidoamp.peg nidoamp/gmon.out *.info .libs/*.info *.gcda .libs/*.gcda *.gcno .libs/*.gcno *.valgrind
+clean-local:
+	rm -rf doxygen/
 	rm -rf coverage/
 	rm -rf doxygen/
 

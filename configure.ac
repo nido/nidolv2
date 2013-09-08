@@ -1,7 +1,8 @@
 # AC_TYPE_UINT32_T and LT_INIT cause problems in 2.59. 2.69 is the
 # lowest version number tested
 AC_PREREQ([2.68])
-AC_INIT([nidolv2], [0.0.1])
+AC_INIT([nidolv2], [0.0.1], [nido@foxserver.be], [],
+    [http://nidomedia.com/nidolv2])
 
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([gnu dist-bzip2 dist-zip])

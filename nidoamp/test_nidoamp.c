@@ -105,7 +105,7 @@ int latencytest(void)
     return EXIT_SUCCESS;
 }
 
-/** Smoketest basically connects the whole system, lets it run for a bit and
+/** Smoketest, basically connects the whole system, lets it run for a bit and
  * disassembles it again. At the end no memory should be allocated and
  * no function should fail.
  */

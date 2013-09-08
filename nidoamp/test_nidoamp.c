@@ -131,7 +131,7 @@ int smoketest(void)
     assert(buffer != NULL);
 
     j = 0;
-    hipass = 1.0;
+    hipass = 0.2;
     latency = 0.0;
 
     handle = instantiate(&descriptor, 96000.0, "Irrelevant", NULL);

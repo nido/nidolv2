@@ -4,9 +4,9 @@
  *
  */
 
-#ifdef __SSE4_1__
-float inner_product_sse41(float *input, float *kernel);
-#endif                          //__SSE4_1__
+#ifdef __SSE3__
+float inner_product_sse3(float *input, float *kernel);
+#endif                          //__SSE3__
 float inner_product(float *input, float *kernel);
 void set_inner_product(float (**function_name) (float *, float *));
 

@@ -39,15 +39,14 @@ float inner_product_sse3(float *input, float *kernel)
     __m128 inputvector;
     __m128 kernelvector;
     __m128 ssetemp = _mm_setzero_ps();
-    __m128 sseunit = _mm_set_ps1(1.0f);
     int i;
     for (i = 0; i < FOURIER_SIZE - 3; i += 4) {
         inputvector = _mm_loadu_ps(input + i);
         kernelvector = _mm_loadu_ps(kernel + i);
-        ssetemp = _mm_add_ss(ssetemp, _mm_mul_ps(inputvector, kernelvector)
+        ssetemp = _mm_add_ps(ssetemp, _mm_mul_ps(inputvector, kernelvector)
             );
     }
-    _mm_hadd_ps(ssetemp, sseunit);
+    ssetemp = _mm_hadd_ps(_mm_hadd_ps(ssetemp, ssetemp), ssetemp);
     output = _mm_cvtss_f32(ssetemp);
     // last items if FOURIER_SIZE%4 != 0
     for (; i < FOURIER_SIZE; i++) {

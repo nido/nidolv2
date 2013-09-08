@@ -3,7 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <lv2.h>
+#include <math.h>
 #include "nidoamp.h"
+
+#define MAX_ERROR 0.000001
+
 
 /** Datastructure holding the buffers and links to input and output ports.
  * TODO: THIS IS COPYPASTA, NEEDS TO BE MADE AN LV2HANDLE
@@ -51,7 +55,7 @@ int smoketest(void);
 int latencytest(void);
 Amp *get_amp(void);
 
-#define DATASIZE 1048576
+#define DATASIZE 104857
 
 /** Test program to run like a host to see if it actually operates and have full debug capabilities; basically just do a smoke test */
 int main(void)
@@ -60,6 +64,9 @@ int main(void)
         return (EXIT_FAILURE);
     }
     if (latencytest() == EXIT_FAILURE) {
+        return (EXIT_FAILURE);
+    }
+    if (avgkerneltest() == EXIT_FAILURE) {
         return (EXIT_FAILURE);
     }
     return EXIT_SUCCESS;
@@ -103,6 +110,34 @@ int latencytest(void)
         }
     }
     return EXIT_SUCCESS;
+}
+
+/** */
+int avgkerneltest(void)
+{
+	float left[FOURIER_SIZE];
+	float right[FOURIER_SIZE];
+	float out[FOURIER_SIZE];
+	float outsse[FOURIER_SIZE];
+	int i;
+	for (i=0; i<FOURIER_SIZE; i++){
+		left[i] = (float) rand() / RAND_MAX;
+		right[i] = (float) rand() / RAND_MAX;
+	}
+	Amp *amp = get_amp();
+
+	amp->previous_buffer = left;
+	amp->fourier_buffer = right;
+
+	average_kernels_sse(outsse, amp);
+	average_kernels(out, amp);
+
+	for (i=0; i<FOURIER_SIZE; i++){
+		if(fabs(out[i] - outsse[i]) > MAX_ERROR) {
+			printf("%g\n", fabs(out[i] - outsse[i]));
+			return EXIT_FAILURE;
+		}
+	}
 }
 
 /** Smoketest, basically connects the whole system, lets it run for a bit and
